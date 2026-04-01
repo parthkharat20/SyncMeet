@@ -1,0 +1,642 @@
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: #0a0a0a;
+  color: white;
+}
+
+/* ─── LANDING PAGE ───────────────────────────────────────────────────────────── */
+
+.landingPageContainer {
+  width: 100vw;
+  min-height: 100vh;
+  background: radial-gradient(ellipse at 20% 50%, #1a0e00 0%, #0a0a0a 60%),
+              radial-gradient(ellipse at 80% 20%, #0d0800 0%, transparent 50%);
+  color: white;
+  overflow: hidden;
+}
+
+.landingPageContainer nav {
+  padding: 1.4rem 3rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.landingPageContainer nav h2 {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.6rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #FF9839, #ffb96a);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.landingPageContainer nav .navlist {
+  display: flex;
+  gap: 1.8rem;
+  align-items: center;
+  cursor: pointer;
+}
+
+.landingPageContainer nav .navlist p,
+.landingPageContainer nav .navlist div p {
+  color: rgba(255,255,255,0.6);
+  font-size: 0.95rem;
+  transition: color 0.2s;
+}
+
+.landingPageContainer nav .navlist p:hover,
+.landingPageContainer nav .navlist div:hover p {
+  color: #FF9839;
+}
+
+.landingMainContainer {
+  display: flex;
+  justify-content: space-between;
+  padding: 5rem 3rem;
+  align-items: center;
+  min-height: 85vh;
+}
+
+.landingContent {
+  max-width: 540px;
+}
+
+.landingBadge {
+  display: inline-block;
+  background: rgba(255,152,57,0.12);
+  border: 1px solid rgba(255,152,57,0.25);
+  color: #FF9839;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 5px 14px;
+  border-radius: 100px;
+  margin-bottom: 20px;
+  letter-spacing: 0.5px;
+}
+
+.landingContent h1 {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(2.4rem, 5vw, 3.6rem);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -1.5px;
+  margin-bottom: 20px;
+}
+
+.landingAccent {
+  color: #FF9839;
+}
+
+.landingSubtitle {
+  color: rgba(255,255,255,0.5);
+  font-size: 1rem;
+  line-height: 1.7;
+  margin-bottom: 36px;
+}
+
+.landingActions {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 48px;
+}
+
+.landingBtnPrimary {
+  background: linear-gradient(135deg, #FF9839, #ff6b35);
+  color: white;
+  text-decoration: none;
+  padding: 13px 28px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.landingBtnPrimary:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.landingBtnSecondary {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: rgba(255,255,255,0.7);
+  text-decoration: none;
+  padding: 13px 28px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: background 0.2s;
+}
+
+.landingBtnSecondary:hover {
+  background: rgba(255,255,255,0.1);
+}
+
+.landingStats {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.stat span {
+  display: block;
+  font-family: 'Syne', sans-serif;
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: white;
+}
+
+.stat p {
+  font-size: 0.8rem;
+  color: rgba(255,255,255,0.4);
+}
+
+.statDivider {
+  width: 1px;
+  height: 36px;
+  background: rgba(255,255,255,0.1);
+}
+
+/* Landing visual mockup */
+.landingVisual {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.videoMockup {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 20px;
+  padding: 20px;
+  width: 380px;
+  box-shadow: 0 32px 80px rgba(0,0,0,0.5);
+  backdrop-filter: blur(10px);
+}
+
+.mockupScreen {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mockupGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.mockupTile {
+  background: rgba(255,255,255,0.05);
+  border-radius: 10px;
+  height: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+.mockupTile.active {
+  border-color: rgba(255,152,57,0.4);
+  background: rgba(255,152,57,0.06);
+}
+
+.mockupAvatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255,152,57,0.2);
+  color: #FF9839;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.mockupControls {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  padding: 8px 0;
+}
+
+.mockupBtn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.1);
+}
+
+.mockupBtn.red {
+  background: #e53935;
+}
+
+/* ─── AUTH PAGE ──────────────────────────────────────────────────────────────── */
+
+.authContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: radial-gradient(ellipse at 30% 40%, #1a0e00 0%, #0a0a0a 65%);
+}
+
+.authCard {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 20px;
+  padding: 40px 36px;
+  width: 420px;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.6);
+  backdrop-filter: blur(20px);
+}
+
+.authHeader {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.authLogo {
+  font-family: 'Syne', sans-serif;
+  font-size: 2rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #FF9839, #ffb96a);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 4px;
+}
+
+.authTagline {
+  color: rgba(255,255,255,0.35);
+  font-size: 0.9rem;
+}
+
+.authTabs {
+  display: flex;
+  background: rgba(255,255,255,0.05);
+  border-radius: 10px;
+  padding: 4px;
+  margin-bottom: 24px;
+  gap: 4px;
+}
+
+.authTab {
+  flex: 1;
+  padding: 9px;
+  border: none;
+  background: transparent;
+  color: rgba(255,255,255,0.45);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: 'DM Sans', sans-serif;
+}
+
+.authTabActive {
+  background: rgba(255,255,255,0.1);
+  color: white;
+}
+
+.authForm {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.authError {
+  color: #ff5252;
+  font-size: 13px;
+  text-align: center;
+  padding: 8px;
+  background: rgba(255,82,82,0.08);
+  border-radius: 8px;
+}
+
+.authSwitch {
+  text-align: center;
+  margin-top: 20px;
+  color: rgba(255,255,255,0.35);
+  font-size: 0.85rem;
+}
+
+.authSwitch span {
+  color: #FF9839;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+/* ─── HOME PAGE ──────────────────────────────────────────────────────────────── */
+
+.homeContainer {
+  min-height: 100vh;
+  background: radial-gradient(ellipse at 20% 40%, #120900 0%, #0a0a0a 60%);
+  display: flex;
+  flex-direction: column;
+}
+
+.homeNav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.2rem 2.5rem;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.homeLogo {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.4rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #FF9839, #ffb96a);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.homeNavRight {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.homeNavLabel {
+  font-size: 13px;
+  color: rgba(255,255,255,0.4);
+}
+
+.homeMain {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4rem 3rem;
+  gap: 40px;
+}
+
+.homeLeft {
+  flex: 1;
+  max-width: 540px;
+}
+
+.homeGreeting {
+  color: rgba(255,255,255,0.4);
+  font-size: 0.95rem;
+  margin-bottom: 14px;
+}
+
+.homeHeadline {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -1px;
+  margin-bottom: 14px;
+}
+
+.homeAccent {
+  color: #FF9839;
+}
+
+.homeSubtext {
+  color: rgba(255,255,255,0.45);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin-bottom: 36px;
+}
+
+.homeMeetActions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 440px;
+}
+
+.homeMeetCard {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px;
+  padding: 18px 20px;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.newMeet {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  cursor: pointer;
+}
+
+.newMeet:hover {
+  border-color: rgba(255,152,57,0.3);
+  background: rgba(255,152,57,0.05);
+}
+
+.homeMeetIcon {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: rgba(255,152,57,0.15);
+  color: #FF9839;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.homeMeetTitle {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: white;
+  margin-bottom: 2px;
+}
+
+.homeMeetSub {
+  font-size: 0.8rem;
+  color: rgba(255,255,255,0.35);
+}
+
+.joinMeet {
+  border-color: rgba(255,255,255,0.06);
+}
+
+.joinInputRow {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+/* Home illustration */
+.homeRight {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+.homeIllustration {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 20px;
+  padding: 24px;
+  width: 320px;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.4);
+}
+
+.illGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.illTile {
+  height: 80px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.illTile.active {
+  border-color: rgba(255,152,57,0.35);
+  background: rgba(255,152,57,0.06);
+}
+
+.illTile span {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255,152,57,0.18);
+  color: #FF9839;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.illBar {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.illDot {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.07);
+}
+
+.illDot.red {
+  background: #e53935;
+}
+
+/* ─── HISTORY PAGE ───────────────────────────────────────────────────────────── */
+
+.historyContainer {
+  min-height: 100vh;
+  background: radial-gradient(ellipse at 20% 30%, #120900 0%, #0a0a0a 60%);
+  display: flex;
+  flex-direction: column;
+}
+
+.historyNav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 1.2rem 2rem;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.historyTitle {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: white;
+}
+
+.historyContent {
+  flex: 1;
+  padding: 2rem 2.5rem;
+  max-width: 700px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.historyEmpty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  color: rgba(255,255,255,0.3);
+  font-size: 15px;
+  text-align: center;
+}
+
+.historyError {
+  color: #ff5252;
+  font-size: 14px;
+}
+
+.historyList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.historyCard {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 14px;
+  padding: 16px 20px;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.historyCard:hover {
+  border-color: rgba(255,152,57,0.2);
+  background: rgba(255,152,57,0.03);
+}
+
+.historyCardLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.historyCodeBadge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: white;
+  font-weight: 700;
+  font-size: 0.95rem;
+  font-family: 'Syne', sans-serif;
+}
+
+.historyDateRow {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.historyDate {
+  font-size: 12px;
+  color: rgba(255,255,255,0.35);
+}
