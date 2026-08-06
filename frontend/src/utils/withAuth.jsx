@@ -1,20 +1,25 @@
-import React, { useEffect } from "react";
+import React, { useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../contexts/AuthContext.jsx";
 
-// FIX: added missing React + useNavigate imports; replaced router.push with navigate()
 const withAuth = (WrappedComponent) => {
   const AuthComponent = (props) => {
     const navigate = useNavigate();
+    const { loading } = useContext(AuthContext);
 
     const isAuthenticated = () => {
       return !!localStorage.getItem("token");
     };
 
     useEffect(() => {
-      if (!isAuthenticated()) {
+      if (!loading && !isAuthenticated()) {
         navigate("/auth");
       }
-    }, []);
+    }, [loading, navigate]);
+
+    if (loading) {
+      return <div style={{ color: '#fff', padding: '2rem', textAlign: 'center' }}>Loading session...</div>;
+    }
 
     if (!isAuthenticated()) return null;
 

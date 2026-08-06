@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import withAuth from '../utils/withAuth.jsx';
 import IconButton from '@mui/material/IconButton';
@@ -8,29 +8,36 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import AddIcon from '@mui/icons-material/Add';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
-import { useContext } from 'react';
 import { AuthContext } from '../contexts/AuthContext.jsx';
 
-// FIX: useSatet typo → useState (was crashing on import)
 function HomeComponent() {
   let navigate = useNavigate();
   const [meetingCode, setMeetingCode] = useState("");
   const [newCode] = useState(() => Math.random().toString(36).substring(2, 9).toUpperCase());
-  const { addToUserHistory } = useContext(AuthContext);
+  const { addToUserHistory, handleLogout, userData } = useContext(AuthContext);
 
   let handleJoinVideoCall = async () => {
     if (!meetingCode.trim()) return;
-    await addToUserHistory(meetingCode);
-    navigate(`/${meetingCode}`);
+    try {
+      await addToUserHistory(meetingCode.trim());
+    } catch (e) {
+      console.error("Could not record meeting history:", e);
+    }
+    navigate(`/${meetingCode.trim()}`);
   };
 
   let handleNewMeeting = async () => {
-    await addToUserHistory(newCode);
+    try {
+      await addToUserHistory(newCode);
+    } catch (e) {
+      console.error("Could not record meeting history:", e);
+    }
     navigate(`/${newCode}`);
   };
 
-  let handleLogout = () => {
-    localStorage.removeItem("token");
+  let onLogout = () => {
+    if (handleLogout) handleLogout();
+    else localStorage.removeItem("token");
     navigate("/auth");
   };
 
@@ -45,7 +52,7 @@ function HomeComponent() {
           </IconButton>
           <span className='homeNavLabel'>History</span>
           <Button
-            onClick={handleLogout}
+            onClick={onLogout}
             startIcon={<LogoutIcon />}
             sx={{ color: '#aaa', textTransform: 'none', ml: 1 }}
           >
@@ -57,7 +64,9 @@ function HomeComponent() {
       {/* Main content */}
       <div className='homeMain'>
         <div className='homeLeft'>
-          <div className='homeGreeting'>Good to see you 👋</div>
+          <div className='homeGreeting'>
+            Good to see you {userData?.name ? `, ${userData.name}` : ''} 👋
+          </div>
           <h1 className='homeHeadline'>
             Quality Video Calls,<br />
             <span className='homeAccent'>Anytime. Anywhere.</span>

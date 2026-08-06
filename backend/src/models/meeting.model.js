@@ -15,6 +15,15 @@ const meetingSchema = new mongoose.Schema({
     default: Date.now,
     required: true,
   },
+  status: {
+    type: String,
+    enum: ["active", "ended"],
+    default: "active",
+    required: true,
+  },
+  endTime: {
+    type: Date,
+  },
 });
 
 const Meeting = mongoose.model("Meeting", meetingSchema);
