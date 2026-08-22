@@ -5,6 +5,7 @@ import Meeting from "../models/meeting.model.js";
 
 const MAX_CONCURRENT_SESSIONS = 10;
 const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days TTL
+const MAX_FIELD_LENGTH = 10000;
 
 const login = async (req, res) => {
   const { username, password } = req.body || {};
@@ -12,6 +13,10 @@ const login = async (req, res) => {
   if (!username || typeof username !== "string" || !username.trim() ||
       !password || typeof password !== "string") {
     return res.status(400).json({ message: "Username and password are required" });
+  }
+
+  if (username.length > MAX_FIELD_LENGTH || password.length > MAX_FIELD_LENGTH) {
+    return res.status(400).json({ message: "Payload exceeds maximum length limit" });
   }
 
   const cleanUsername = username.trim();
@@ -73,6 +78,10 @@ const register = async (req, res) => {
     return res.status(400).json({ message: "All fields are required" });
   }
 
+  if (name.length > MAX_FIELD_LENGTH || username.length > MAX_FIELD_LENGTH || password.length > MAX_FIELD_LENGTH) {
+    return res.status(400).json({ message: "Payload exceeds maximum length limit" });
+  }
+
   const cleanName = name.trim();
   const cleanUsername = username.trim();
 
@@ -99,7 +108,6 @@ const register = async (req, res) => {
 
     return res.status(201).json({ message: "User registered successfully" });
   } catch (error) {
-    // Sanitize E11000 MongoDB duplicate key error to clean user-facing response
     if (error.code === 11000) {
       return res.status(400).json({ message: "Username already taken" });
     }
@@ -142,6 +150,10 @@ const addToHistory = async (req, res) => {
     return res.status(400).json({ message: "meeting_code is required" });
   }
 
+  if (meeting_code.length > MAX_FIELD_LENGTH) {
+    return res.status(400).json({ message: "Payload exceeds maximum length limit" });
+  }
+
   try {
     const userId = req.user ? req.user._id : null;
     if (!userId) {
@@ -161,4 +173,41 @@ const addToHistory = async (req, res) => {
   }
 };
 
-export { login, register, getUserProfile, getUserHistory, addToHistory };
+const logout = async (req, res) => {
+  try {
+    const token = req.token;
+    const userId = req.user._id;
+
+    await User.updateOne(
+      { _id: userId },
+      {
+        $pull: { tokens: { token: token } },
+        $set: { token: req.user.token === token ? "" : req.user.token },
+      }
+    );
+
+    return res.status(200).json({ message: "Logged out successfully" });
+  } catch (error) {
+    return res.status(500).json({ message: "Error logging out", error: error.message });
+  }
+};
+
+const checkMeetingStatus = async (req, res) => {
+  try {
+    const { code } = req.params;
+    if (!code || typeof code !== "string" || !code.trim()) {
+      return res.status(400).json({ message: "Meeting code is required" });
+    }
+
+    const meeting = await Meeting.findOne({ meetingCode: code.trim().toUpperCase() }).sort({ date: -1 });
+    if (meeting && meeting.status === "ended") {
+      return res.status(200).json({ ended: true, message: "This meeting has ended." });
+    }
+
+    return res.status(200).json({ ended: false });
+  } catch (error) {
+    return res.status(500).json({ message: "Error checking meeting status", error: error.message });
+  }
+};
+
+export { login, register, getUserProfile, getUserHistory, addToHistory, logout, checkMeetingStatus };

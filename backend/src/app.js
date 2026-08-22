@@ -44,6 +44,7 @@ app.use("/api/users", userRoutes);
 
 const PORT = process.env.PORT || 8000;
 const MONGO_URI = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/syncmeet";
+const LOCAL_MONGO_URI = "mongodb://127.0.0.1:27017/syncmeet";
 
 // Reconcile any meetings left in 'active' state due to server crashes
 export const reconcileStaleActiveMeetings = async () => {
@@ -62,11 +63,17 @@ export const reconcileStaleActiveMeetings = async () => {
 
 const start = async () => {
   try {
-    await mongoose.connect(MONGO_URI, { serverSelectionTimeoutMS: 5000 });
-    console.log("MongoDB connected successfully");
+    await mongoose.connect(MONGO_URI, { serverSelectionTimeoutMS: 2500 });
+    console.log("MongoDB connected successfully (Atlas)");
     await reconcileStaleActiveMeetings();
   } catch (error) {
-    console.warn("MongoDB connection warning (proceeding without DB):", error.message);
+    try {
+      await mongoose.connect(LOCAL_MONGO_URI, { serverSelectionTimeoutMS: 2000 });
+      console.log("MongoDB connected successfully (Local Fallback)");
+      await reconcileStaleActiveMeetings();
+    } catch (localErr) {
+      console.warn("MongoDB connection warning (proceeding without DB):", error.message);
+    }
   }
 
   server.listen(PORT, () => {

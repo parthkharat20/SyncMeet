@@ -2,9 +2,11 @@ import { Router } from "express";
 import rateLimit from "express-rate-limit";
 import {
   addToHistory,
+  checkMeetingStatus,
   getUserHistory,
   getUserProfile,
   login,
+  logout,
   register
 } from "../controllers/user.controller.js";
 import { authMiddleware } from "../middleware/auth.middleware.js";
@@ -24,5 +26,7 @@ router.post("/register", register);
 router.get("/profile", authMiddleware, getUserProfile);
 router.post("/add_to_activity", authMiddleware, addToHistory);
 router.get("/get_all_activity", authMiddleware, getUserHistory);
+router.post("/logout", authMiddleware, logout);
+router.get("/check_meeting_status/:code", checkMeetingStatus);
 
 export default router;

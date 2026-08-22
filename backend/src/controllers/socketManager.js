@@ -73,6 +73,16 @@ export const connectToSocket = (server) => {
         connections[roomCode] = [];
       }
 
+      const MAX_PARTICIPANTS = 6;
+      if (connections[roomCode].length >= MAX_PARTICIPANTS && !connections[roomCode].includes(socket.id)) {
+        console.log(`[ROOM FULL REJECT] Socket ${socket.id} rejected. Room ${roomCode} has reached max capacity of ${MAX_PARTICIPANTS}.`);
+        io.to(socket.id).emit("room-full", {
+          message: "Meeting is full. Maximum limit is 6 participants.",
+          maxParticipants: MAX_PARTICIPANTS,
+        });
+        return;
+      }
+
       if (!connections[roomCode].includes(socket.id)) {
         connections[roomCode].push(socket.id);
       }

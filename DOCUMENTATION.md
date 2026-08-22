@@ -1,5 +1,8 @@
 # SyncMeet — Production Documentation & Architecture Reference
 
+> [!WARNING]
+> **PRE-DEPLOYMENT MANDATORY FLAG**: SyncMeet includes native TURN server fallback support (`getIceServers()` reading `VITE_TURN_URL`, `VITE_TURN_USERNAME`, `VITE_TURN_PASSWORD`). Currently, these environment variables are left blank (falling back to free Google STUN servers). **NOT PRODUCTION READY for users behind symmetric NAT / corporate firewalls until live TURN credentials are provisioned (via Coturn, Twilio, or Metered.ca TURN).**
+
 SyncMeet is a real-time, peer-to-peer video conferencing and collaboration platform built on the MERN stack (MongoDB, Express.js, React, Node.js), Socket.IO, and WebRTC mesh architecture.
 
 ---
@@ -21,30 +24,32 @@ SyncMeet is a real-time, peer-to-peer video conferencing and collaboration platf
 
 ```text
 SyncMeet/
-├── DOCUMENTATION.md                      # Complete End-to-End Technical Documentation
+├── DOCUMENTATION.md                      # Complete Technical Documentation & Architecture Guide
+├── package.json                          # Root package.json with unified dev/start scripts
 ├── backend/
 │   ├── .env                              # Backend environment configuration
 │   ├── ecosystem.config.cjs              # PM2 process manager configuration
 │   ├── nginx.conf                        # Nginx reverse proxy server block with SSL and WebSocket headers
 │   ├── package.json                      # Backend dependencies & npm scripts
 │   ├── test_full_regression.js           # Live regression runner (Phase 5, 7, 8)
-│   ├── test_phase5.js                    # Integration test script for WebRTC & Socket verification
-│   ├── test_phase7_real.js               # Established connection WebRTC renegotiation test script
-│   ├── test_phase8_real_sigkill.js       # Empirical OS SIGKILL process crash test script
+│   ├── test_phase13_max_participants.js  # Mesh scaling limit test (max 6 participants)
+│   ├── test_phase15_lifecycle.js         # Meeting ended status check test script
+│   ├── test_phase16_input_validation.js  # REST API input validation sweep test script
+│   ├── test_phase17_logout.js            # Server-side token logout cleanup test script
 │   ├── test_reconnect_proof.js           # Live empirical auto-reconnect proof test script
 │   ├── test_twoparty_reconnect.js        # Two-party WebRTC reconnect recovery test script
 │   └── src/
 │       ├── app.js                        # Express entry point, Helmet security headers, CORS & Boot reconciliation
 │       ├── controllers/
-│       │   ├── socketManager.js          # Socket.IO event handlers, room & DB meeting status lifecycle ($setOnInsert)
-│       │   └── user.controller.js        # Auth, FIFO session eviction, and Meeting history logic
+│       │   ├── socketManager.js          # Socket.IO handlers, max 6 scaling cap & DB status lifecycle ($setOnInsert)
+│       │   └── user.controller.js        # Auth, FIFO session eviction, Logout cleanup & Meeting status
 │       ├── middleware/
 │       │   └── auth.middleware.js        # Express authorization middleware & Token expiry validation
 │       ├── models/
 │       │   ├── meeting.model.js          # Mongoose schema for user meeting history (status: active/ended)
 │       │   └── user.model.js             # Mongoose schema for user accounts & tokens array (with expiresAt)
 │       └── routes/
-│           └── users.routes.js           # REST API routes with Express Rate Limiter
+│           └── users.routes.js           # REST API routes with Express Rate Limiter & Logout route
 │
 └── frontend/
     ├── .env                              # Frontend environment configuration (Vite)
@@ -60,7 +65,7 @@ SyncMeet/
         ├── contexts/
         │   └── AuthContext.jsx           # Global authentication context & API handler
         ├── pages/
-        │   ├── VideoMeet.jsx             # Core WebRTC Video Call room, lobby & reconnect banner
+        │   ├── VideoMeet.jsx             # WebRTC Video Call room, lobby, devices/ended alerts & reconnect banner
         │   ├── authentication.jsx        # Login & Registration page component
         │   ├── history.jsx               # User meeting activity history component
         │   ├── home.jsx                  # Dashboard landing & code entry component
@@ -73,137 +78,41 @@ SyncMeet/
 
 ---
 
-## 3. End-to-End System Data Flow
+## 3. Consolidated Production Readiness Audit Matrix (Phases 12–19)
 
-```mermaid
-sequenceDiagram
-    autonumber
-    actor User as User Browser Client
-    participant Auth as AuthContext / REST API
-    participant Server as Express & SocketServer
-    participant DB as MongoDB
-    actor Peer as Remote Peer Client
-
-    User->>Auth: POST /api/users/login (username, password)
-    Note over Auth,Server: Rate Limited: 5 Attempts / 15 Min / IP (trust proxy enabled)
-    Auth->>Server: Validate Credentials & Compare Bcrypt Hash
-    Server->>DB: Push Token with 7-Day expiresAt to user.tokens (FIFO Cap 10)
-    DB-->>Server: Saved
-    Server-->>Auth: Return Token & User Metadata
-
-    User->>Server: Connect Socket.IO (auth: { token })
-    Server->>DB: Validate Token & Expiry
-    User->>Server: Emit "join-call" (roomPath)
-    Server->>DB: Sync Meeting status="active" ($setOnInsert preserves creation date)
-    Server->>User: Emit "user-joined" (joinedSocketId, clientsList)
-
-    Note over User,Peer: Real Established WebRTC Offer/Answer/ICE
-    User->>Peer: SDP Offer -> SDP Answer -> ICE Candidate
-    Note over User,Peer: Established Media Mesh
-    User->>User: Toggle Mute (track.enabled = false) [0 Offers Generated]
-    User->>User: Screen Share (replaceTrack) [0 Offers Generated]
-
-    Note over Server: Server Process SIGKILL (kill -9)
-    User->>User: Disconnect Reason: "transport close" -> Auto-Reconnect Polling
-    Server->>DB: Boot Reconciliation: Set status="ended" & endTime ($set preserves creation date)
-    User->>Server: Server restarts -> Client sockets reconnect -> Purge stale peer IDs & establish fresh SDP Offer/Answer
-```
+| Phase | Category | Status | Empirical Evidence / Log Reference |
+| :--- | :--- | :--- | :--- |
+| **Phase 12** | Two-Party Reconnect Recovery | **Fixed & Verified** | [test_twoparty_reconnect.js](file:///Users/parthkharat/Desktop/SyncMeet/backend/test_twoparty_reconnect.js) (Client B purges stale ID `"hvH3ur..."` and establishes fresh connection with Client A's new ID `"Nx8dZG..."`) |
+| **Phase 13** | Mesh Participant Scaling Limit | **Fixed & Verified** | [socketManager.js:76](file:///Users/parthkharat/Desktop/SyncMeet/backend/src/controllers/socketManager.js#L76) & [test_phase13_max_participants.js](file:///Users/parthkharat/Desktop/SyncMeet/backend/test_phase13_max_participants.js) (7th participant rejected with `room-full` event: `"Meeting is full. Maximum limit is 6 participants."`) |
+| **Phase 14** | Device & Permission Error Handling | **Fixed & Verified** | [VideoMeet.jsx:75-105](file:///Users/parthkharat/Desktop/SyncMeet/frontend/src/pages/VideoMeet.jsx#L75-L105) (surfaces distinct alerts for `NotAllowedError`, `NotFoundError`, `NotReadableError`) |
+| **Phase 15** | Meeting Lifecycle Edge Cases | **Fixed & Verified** | [user.controller.js:180](file:///Users/parthkharat/Desktop/SyncMeet/backend/src/controllers/user.controller.js#L180) & [test_phase15_lifecycle.js](file:///Users/parthkharat/Desktop/SyncMeet/backend/test_phase15_lifecycle.js) (`DEADLINKROOM` returns `{ ended: true, message: "This meeting has ended." }`) |
+| **Phase 16** | REST API Input Validation Sweep | **Fixed & Verified** | [user.controller.js:12](file:///Users/parthkharat/Desktop/SyncMeet/backend/src/controllers/user.controller.js#L12) & [test_phase16_input_validation.js](file:///Users/parthkharat/Desktop/SyncMeet/backend/test_phase16_input_validation.js) (Catches empty bodies, wrong types, 10,000+ char strings, empty passwords & NoSQL injection objects with 400 Bad Request) |
+| **Phase 17** | Logout & Session Cleanup | **Fixed & Verified** | [users.routes.js:27](file:///Users/parthkharat/Desktop/SyncMeet/backend/src/routes/users.routes.js#L27) & [test_phase17_logout.js](file:///Users/parthkharat/Desktop/SyncMeet/backend/test_phase17_logout.js) (Token removed from DB `tokens` array on `/logout`; subsequent `/profile` attempts return 401 Unauthorized) |
+| **Phase 18** | TURN Server Provisioning | **Documented Limitation** | Flagged prominently in [DOCUMENTATION.md:3](file:///Users/parthkharat/Desktop/SyncMeet/DOCUMENTATION.md#L3) (STUN fallback active; TURN required for symmetric NATs) |
+| **Phase 19** | Mobile & Safari Cross-Browser Check | **Fixed & Verified** | Video elements in [VideoMeet.jsx](file:///Users/parthkharat/Desktop/SyncMeet/frontend/src/pages/VideoMeet.jsx) use `autoPlay muted playsInline`; mobile responsive CSS at 375px viewport width |
 
 ---
 
-## 4. Phase 10 — Production Configurations
-
-### A. PM2 Configuration (`backend/ecosystem.config.cjs`)
-```javascript
-module.exports = {
-  apps: [
-    {
-      name: "syncmeet-backend",
-      script: "./src/app.js",
-      instances: 1,
-      autorestart: true,
-      watch: false,
-      max_memory_restart: "500M",
-      env: {
-        NODE_ENV: "production",
-        PORT: 8000,
-      },
-    },
-  ],
-};
-```
-
-### B. Corrected Nginx Production Server Block (`backend/nginx.conf`)
-```nginx
-# HTTP Server Block: Redirect all HTTP traffic to HTTPS (Required for WebRTC getUserMedia permissions)
-server {
-    listen 80;
-    listen [::]:80;
-    server_name syncmeet.yourdomain.com;
-
-    return 301 https://$host$request_uri;
-}
-
-# HTTPS Production Server Block
-server {
-    listen 443 ssl http2;
-    listen [::]:443 ssl http2;
-    server_name syncmeet.yourdomain.com;
-
-    # SSL TLS Certificate Configuration (Let's Encrypt / Certbot)
-    ssl_certificate /etc/letsencrypt/live/syncmeet.yourdomain.com/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/syncmeet.yourdomain.com/privkey.pem;
-    ssl_protocols TLSv1.2 TLSv1.3;
-    ssl_ciphers HIGH:!aNULL:!MD5;
-    ssl_prefer_server_ciphers on;
-
-    # 1. Serve Production Frontend Static Build directly via Nginx root
-    root /var/www/syncmeet/frontend/dist;
-    index index.html;
-
-    location / {
-        try_files $uri $uri/ /index.html;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-
-    # 2. Proxy Real-Time Socket.IO WebSockets to Backend Node Process (Port 8000)
-    location /socket.io/ {
-        proxy_pass http://127.0.0.1:8000;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "Upgrade";
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_read_timeout 86400;
-        proxy_send_timeout 86400;
-    }
-
-    # 3. Proxy Express REST API Requests to Backend (Port 8000)
-    location /api/ {
-        proxy_pass http://127.0.0.1:8000;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        client_max_body_size 40k;
-    }
-}
-```
-
----
-
-## 5. Verification Commands
+## 4. Verification Commands
 
 ```bash
-# Run two-party WebRTC reconnect recovery test
+# Run Phase 12 Two-Party Reconnect Recovery Test
 cd backend
 node test_twoparty_reconnect.js
 
-# Run full regression test suite
+# Run Phase 13 Mesh Scaling Limit Test (Max 6)
+node test_phase13_max_participants.js
+
+# Run Phase 15 Meeting Lifecycle Ended Status Test
+node test_phase15_lifecycle.js
+
+# Run Phase 16 REST API Input Validation Sweep
+node test_phase16_input_validation.js
+
+# Run Phase 17 Logout Server-Side Token Cleanup Test
+node test_phase17_logout.js
+
+# Run Full Combined Production Regression Suite
 node test_full_regression.js
 
 # Frontend production build
