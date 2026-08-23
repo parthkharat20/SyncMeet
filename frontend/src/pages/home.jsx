@@ -38,7 +38,6 @@ export const Home = () => {
     fetchRecent();
   }, []);
 
-  // Generate 7-char alphanumeric meeting code
   const generateMeetingCode = () => {
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     let code = "";
@@ -76,7 +75,6 @@ export const Home = () => {
     setErrorMsg("");
 
     try {
-      // Phase 15 Ended Meeting Status Check
       const statusRes = await api.get(`/check_meeting_status/${cleanCode}`);
       if (statusRes.data && statusRes.data.ended) {
         setErrorMsg("This meeting has already ended and cannot be rejoined.");

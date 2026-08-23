@@ -63,7 +63,7 @@ export const History = () => {
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "var(--bg-dark)" }}>
       <Navbar />
 
-      <main style={{ flex: 1, padding: "40px 24px", maxWidth: "1100px", margin: "0 auto", width: "100%" }}>
+      <main style={{ flex: 1, padding: "var(--space-xl) var(--space-lg)", maxWidth: "1000px", margin: "0 auto", width: "100%" }}>
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "32px" }} className="animate-entrance">
           <div>
@@ -74,8 +74,8 @@ export const History = () => {
             <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
               <div
                 style={{
-                  width: "42px",
-                  height: "42px",
+                  width: "40px",
+                  height: "40px",
                   borderRadius: "var(--radius-md)",
                   background: "rgba(6, 182, 212, 0.15)",
                   color: "var(--cyan-accent)",
@@ -86,7 +86,7 @@ export const History = () => {
               >
                 <HistoryIcon style={{ fontSize: "24px" }} />
               </div>
-              <h1 style={{ fontSize: "28px", fontWeight: "800" }}>Meeting Activity History</h1>
+              <h1 style={{ fontSize: "26px", fontWeight: "800" }}>Meeting Activity History</h1>
             </div>
           </div>
           <Badge variant="cyan">{meetings.length} Total Records</Badge>
@@ -100,7 +100,7 @@ export const History = () => {
 
         {loading ? (
           <div style={{ padding: "80px 0", textAlign: "center", color: "var(--text-secondary)" }}>
-            <Spinner size={32} color="var(--cyan-accent)" />
+            <Spinner size={32} />
             <p style={{ marginTop: "16px", fontSize: "15px" }}>Loading meeting activity records...</p>
           </div>
         ) : meetings.length === 0 ? (
@@ -129,7 +129,7 @@ export const History = () => {
             </Button>
           </Card>
         ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
             {meetings.map((item, index) => (
               <Card
                 key={item._id || index}
@@ -138,7 +138,7 @@ export const History = () => {
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "space-between",
-                  padding: "20px 24px",
+                  padding: "16px 24px",
                   flexWrap: "wrap",
                   gap: "16px",
                 }}
@@ -146,8 +146,8 @@ export const History = () => {
                 <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
                   <div
                     style={{
-                      width: "44px",
-                      height: "44px",
+                      width: "40px",
+                      height: "40px",
                       borderRadius: "var(--radius-md)",
                       background: "var(--surface-2)",
                       display: "flex",
@@ -166,7 +166,7 @@ export const History = () => {
                           fontSize: "18px",
                           fontWeight: "700",
                           fontFamily: "var(--font-mono)",
-                          color: "var(--text-primary)",
+                          color: "var(--cyan-accent)",
                           letterSpacing: "0.5px",
                         }}
                       >
@@ -187,7 +187,7 @@ export const History = () => {
                         {copiedCode === item.meetingCode ? <CheckIcon style={{ fontSize: "16px" }} /> : <ContentCopyIcon style={{ fontSize: "16px" }} />}
                       </button>
                     </div>
-                    <span style={{ fontSize: "13px", color: "var(--text-secondary)", marginTop: "4px", display: "block" }}>
+                    <span style={{ fontSize: "13px", color: "var(--text-muted)", marginTop: "2px", display: "block" }}>
                       Joined on {formatDate(item.date)}
                     </span>
                   </div>

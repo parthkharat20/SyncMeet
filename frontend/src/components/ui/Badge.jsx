@@ -8,9 +8,9 @@ export const Badge = ({
 }) => {
   const variantStyles = {
     cyan: {
-      background: "rgba(6, 182, 212, 0.12)",
+      background: "rgba(6, 182, 212, 0.15)",
       color: "var(--cyan-accent)",
-      border: "1px solid rgba(6, 182, 212, 0.3)",
+      border: "var(--border-cyan)",
     },
     success: {
       background: "var(--color-success-bg)",
@@ -30,7 +30,7 @@ export const Badge = ({
     info: {
       background: "var(--color-info-bg)",
       color: "var(--color-info)",
-      border: "1px solid rgba(56, 189, 248, 0.3)",
+      border: "1px solid rgba(59, 130, 246, 0.3)",
     },
   }[variant];
 
@@ -39,12 +39,12 @@ export const Badge = ({
       style={{
         display: "inline-flex",
         alignItems: "center",
-        padding: "3px 10px",
+        padding: "4px 12px",
         borderRadius: "var(--radius-pill)",
         fontSize: "12px",
         fontWeight: "600",
         fontFamily: "var(--font-mono, inherit)",
-        letterSpacing: "0.3px",
+        letterSpacing: "0.2px",
         ...variantStyles,
         ...style,
       }}

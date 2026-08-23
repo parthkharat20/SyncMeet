@@ -20,7 +20,7 @@ export const Button = ({
     display: "inline-flex",
     alignItems: "center",
     justifyContent: "center",
-    gap: "8px",
+    gap: "var(--space-sm)",
     fontWeight: "600",
     borderRadius: "var(--radius-md)",
     cursor: isInteractive ? "pointer" : "not-allowed",
@@ -84,7 +84,7 @@ export const Button = ({
     >
       {loading ? (
         <>
-          <Spinner size={16} />
+          <Spinner size={16} color="currentColor" />
           <span>Processing...</span>
         </>
       ) : (

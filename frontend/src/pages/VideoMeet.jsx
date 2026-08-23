@@ -9,7 +9,6 @@ import Card from '../components/ui/Card';
 import Alert from '../components/ui/Alert';
 import Badge from '../components/ui/Badge';
 import Input from '../components/ui/Input';
-import Spinner from '../components/ui/Spinner';
 
 import VideocamIcon from '@mui/icons-material/Videocam';
 import VideocamOffIcon from '@mui/icons-material/VideocamOff';
@@ -25,21 +24,27 @@ import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import ReplayIcon from '@mui/icons-material/Replay';
 
 const getIceServers = () => {
-  const servers = [
-    { urls: "stun:stun.l.google.com:19302" },
-    { urls: "stun:stun1.l.google.com:19302" },
+  const turnUsername = import.meta.env.VITE_TURN_USERNAME;
+  const turnPassword = import.meta.env.VITE_TURN_PASSWORD;
+
+  const iceServers = [
+    { urls: "stun:stun.relay.metered.ca:80" },
   ];
 
-  if (import.meta.env.VITE_TURN_URL) {
-    servers.push({
-      urls: import.meta.env.VITE_TURN_URL,
-      username: import.meta.env.VITE_TURN_USERNAME || "",
-      credential: import.meta.env.VITE_TURN_PASSWORD || "",
-    });
+  if (turnUsername && turnPassword) {
+    iceServers.push(
+      { urls: "turn:global.relay.metered.ca:80", username: turnUsername, credential: turnPassword },
+      { urls: "turn:global.relay.metered.ca:80?transport=tcp", username: turnUsername, credential: turnPassword },
+      { urls: "turn:global.relay.metered.ca:443", username: turnUsername, credential: turnPassword },
+      { urls: "turns:global.relay.metered.ca:443?transport=tcp", username: turnUsername, credential: turnPassword }
+    );
+  } else {
+    console.warn("[TURN CONFIG] No TURN credentials found — calls behind restrictive NATs may fail.");
   }
 
-  return { iceServers: servers };
+  return { iceServers };
 };
+
 
 export default function VideoMeetComponent() {
   const socketRef = useRef(null);
@@ -170,6 +175,13 @@ export default function VideoMeetComponent() {
       cleanupResources();
     };
   }, []);
+
+  // Ensure stream binding whenever askForUsername changes
+  useEffect(() => {
+    if (!askForUsername && localRef.current && window.localStream) {
+      localRef.current.srcObject = window.localStream;
+    }
+  }, [askForUsername]);
 
   const cleanupResources = () => {
     if (window.localStream) {
@@ -453,10 +465,10 @@ export default function VideoMeetComponent() {
 
   // Helper for dynamic video tile grid calculation
   const totalParticipants = videos.length + 1;
-  const gridColumns = totalParticipants === 1 ? "1fr" : totalParticipants <= 4 ? "repeat(2, 1fr)" : "repeat(3, 1fr)";
+  const gridTemplateColumns = totalParticipants === 1 ? "1fr" : totalParticipants <= 4 ? "repeat(2, 1fr)" : "repeat(3, 1fr)";
 
   return (
-    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "#05070D" }}>
+    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: askForUsername ? "#FFFFFF" : "#111827" }}>
       <Navbar />
 
       {/* Reconnecting Overlay Banner */}
@@ -464,7 +476,7 @@ export default function VideoMeetComponent() {
         <div
           style={{
             background: "var(--color-warning-bg)",
-            borderBottom: "1px solid rgba(245, 158, 11, 0.3)",
+            borderBottom: "1px solid rgba(217, 119, 6, 0.3)",
             color: "var(--color-warning)",
             padding: "10px 24px",
             fontSize: "14px",
@@ -485,13 +497,13 @@ export default function VideoMeetComponent() {
       {askForUsername ? (
         <main style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "40px 20px" }}>
           <div style={{ width: "100%", maxWidth: "480px" }} className="animate-entrance">
-            <Card variant="glass" style={{ border: "var(--border-subtle)" }}>
+            <Card variant="elevated" style={{ border: "1px solid #E2E8F0" }}>
               <div style={{ textAlign: "center", marginBottom: "24px" }}>
                 <Badge variant="cyan" style={{ marginBottom: "12px" }}>
                   PRE-CALL LOBBY
                 </Badge>
-                <h1 style={{ fontSize: "24px", fontWeight: "800" }}>Ready to Join Call?</h1>
-                <p style={{ color: "var(--text-secondary)", fontSize: "14px", marginTop: "6px" }}>
+                <h1 style={{ fontSize: "24px", fontWeight: "800", color: "#0F172A" }}>Ready to Join Call?</h1>
+                <p style={{ color: "#475569", fontSize: "14px", marginTop: "6px" }}>
                   Confirm your display name and media permissions before joining.
                 </p>
               </div>
@@ -512,17 +524,23 @@ export default function VideoMeetComponent() {
               <div
                 style={{
                   width: "100%",
-                  height: "220px",
+                  height: "240px",
                   borderRadius: "var(--radius-md)",
-                  background: "#000000",
+                  background: "#0F172A",
                   overflow: "hidden",
                   marginBottom: "24px",
                   position: "relative",
-                  border: "var(--border-cyan)",
+                  border: "1px solid #1A73E8",
+                  boxShadow: "0 4px 16px rgba(26, 115, 232, 0.15)",
                 }}
               >
                 <video
-                  ref={localRef}
+                  ref={(el) => {
+                    localRef.current = el;
+                    if (el && window.localStream) {
+                      el.srcObject = window.localStream;
+                    }
+                  }}
                   autoPlay
                   muted
                   playsInline
@@ -549,21 +567,21 @@ export default function VideoMeetComponent() {
                   disabled={!username.trim() || !!meetingEndedError}
                 >
                   <VideocamIcon />
-                  <span>Enter Video Room</span>
+                  <span>Join Call Now</span>
                 </Button>
               </div>
             </Card>
           </div>
         </main>
       ) : (
-        <main style={{ flex: 1, position: "relative", display: "flex", flexDirection: "column", height: "calc(100vh - 72px)", overflow: "hidden" }}>
+        <main style={{ flex: 1, position: "relative", display: "flex", flexDirection: "column", height: "calc(100vh - 64px)", overflow: "hidden", background: "#0F172A" }}>
           {/* Room Error Overlays */}
           {roomFullError && (
-            <div style={{ position: "absolute", inset: 0, zIndex: 900, background: "rgba(11, 15, 25, 0.95)", display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}>
-              <Card variant="glass" style={{ maxWidth: "420px", textAlign: "center" }}>
+            <div style={{ position: "absolute", inset: 0, zIndex: 900, background: "rgba(15, 23, 42, 0.95)", display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}>
+              <Card variant="elevated" style={{ maxWidth: "420px", textAlign: "center" }}>
                 <WarningAmberIcon style={{ fontSize: "54px", color: "var(--color-warning)", marginBottom: "16px" }} />
-                <h2 style={{ fontSize: "22px", fontWeight: "700", marginBottom: "8px" }}>Room Capacity Reached</h2>
-                <p style={{ color: "var(--text-secondary)", fontSize: "14px", marginBottom: "24px" }}>{roomFullError}</p>
+                <h2 style={{ fontSize: "22px", fontWeight: "700", color: "#0F172A", marginBottom: "8px" }}>Room Capacity Reached</h2>
+                <p style={{ color: "#475569", fontSize: "14px", marginBottom: "24px" }}>{roomFullError}</p>
                 <Button variant="primary" size="md" fullWidth={true} onClick={handleEndCall}>
                   Return to Lobby
                 </Button>
@@ -593,15 +611,20 @@ export default function VideoMeetComponent() {
                   width: "100%",
                   height: "100%",
                   minHeight: "260px",
-                  background: "#0F172A",
+                  background: "#1E293B",
                   borderRadius: "var(--radius-lg)",
                   overflow: "hidden",
-                  border: "2px solid var(--cyan-accent)",
-                  boxShadow: "var(--glow-cyan)",
+                  border: "2px solid #1A73E8",
+                  boxShadow: "0 4px 20px rgba(26, 115, 232, 0.25)",
                 }}
               >
                 <video
-                  ref={localRef}
+                  ref={(el) => {
+                    localRef.current = el;
+                    if (el && window.localStream) {
+                      el.srcObject = window.localStream;
+                    }
+                  }}
                   autoPlay
                   muted
                   playsInline
@@ -622,10 +645,10 @@ export default function VideoMeetComponent() {
                     width: "100%",
                     height: "100%",
                     minHeight: "260px",
-                    background: "#0F172A",
+                    background: "#1E293B",
                     borderRadius: "var(--radius-lg)",
                     overflow: "hidden",
-                    border: "var(--border-subtle)",
+                    border: "1px solid #334155",
                   }}
                 >
                   <video
@@ -648,39 +671,39 @@ export default function VideoMeetComponent() {
               <aside
                 style={{
                   width: "360px",
-                  background: "var(--surface-1)",
-                  borderLeft: "var(--border-subtle)",
+                  background: "#FFFFFF",
+                  borderLeft: "1px solid #E2E8F0",
                   display: "flex",
                   flexDirection: "column",
                   zIndex: 500,
                 }}
                 className="animate-entrance"
               >
-                <div style={{ padding: "16px 20px", borderBottom: "var(--border-subtle)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <h3 style={{ fontSize: "16px", fontWeight: "700" }}>In-Call Messages</h3>
-                  <button onClick={() => setShowChat(false)} style={{ background: "none", border: "none", color: "var(--text-secondary)", cursor: "pointer" }}>
+                <div style={{ padding: "16px 20px", borderBottom: "1px solid #E2E8F0", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <h3 style={{ fontSize: "16px", fontWeight: "700", color: "#0F172A" }}>In-Call Messages</h3>
+                  <button onClick={() => setShowChat(false)} style={{ background: "none", border: "none", color: "#64748B", cursor: "pointer" }}>
                     <CloseIcon style={{ fontSize: "20px" }} />
                   </button>
                 </div>
 
                 <div style={{ flex: 1, padding: "16px", overflowY: "auto", display: "flex", flexDirection: "column", gap: "12px" }}>
                   {messages.length === 0 ? (
-                    <div style={{ textAlign: "center", color: "var(--text-muted)", fontSize: "14px", marginTop: "40px" }}>
+                    <div style={{ textAlign: "center", color: "#94A3B8", fontSize: "14px", marginTop: "40px" }}>
                       No messages yet. Start the conversation!
                     </div>
                   ) : (
                     messages.map((m, idx) => (
-                      <div key={idx} style={{ background: "var(--surface-2)", padding: "10px 14px", borderRadius: "var(--radius-md)", fontSize: "14px" }}>
-                        <span style={{ fontWeight: "700", color: "var(--cyan-accent)", display: "block", fontSize: "12px", marginBottom: "2px" }}>
+                      <div key={idx} style={{ background: "#F8FAFC", border: "1px solid #E2E8F0", padding: "10px 14px", borderRadius: "var(--radius-md)", fontSize: "14px" }}>
+                        <span style={{ fontWeight: "700", color: "var(--brand-blue)", display: "block", fontSize: "12px", marginBottom: "2px" }}>
                           {m.sender}
                         </span>
-                        <span style={{ color: "var(--text-primary)" }}>{m.data}</span>
+                        <span style={{ color: "#0F172A" }}>{m.data}</span>
                       </div>
                     ))
                   )}
                 </div>
 
-                <div style={{ padding: "16px", borderTop: "var(--border-subtle)", display: "flex", gap: "8px" }}>
+                <div style={{ padding: "16px", borderTop: "1px solid #E2E8F0", display: "flex", gap: "8px" }}>
                   <Input
                     placeholder="Type a message..."
                     value={message}
@@ -695,13 +718,12 @@ export default function VideoMeetComponent() {
             )}
           </div>
 
-          {/* Polished Floating Control Bar */}
+          {/* Polished Floating Control Bar (Google Meet Style) */}
           <footer
             style={{
               height: "80px",
-              background: "var(--surface-glass)",
-              backdropFilter: "blur(16px)",
-              borderTop: "var(--border-subtle)",
+              background: "#1E293B",
+              borderTop: "1px solid #334155",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",

@@ -1,5 +1,11 @@
 import { spawn } from "node:child_process";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { io } from "socket.io-client";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const appPath = path.resolve(__dirname, "../../src/app.js");
 
 const SERVER_URL = "http://localhost:8000";
 
@@ -8,7 +14,7 @@ console.log("      SYNCMEET FINAL PRODUCTION REGRESSION SUITE          ");
 console.log("==========================================================\n");
 
 // Spawn backend server process
-const backend = spawn("node", ["src/app.js"], {
+const backend = spawn("node", [appPath], {
   env: { ...process.env, PORT: "8000" },
   stdio: ["pipe", "pipe", "pipe"],
 });
@@ -153,7 +159,7 @@ const runSuite = async () => {
   await new Promise((r) => setTimeout(r, 1500));
 
   console.log("\n[P8 BOOT RESTART] Restarting Backend Server process...");
-  const restartedBackend = spawn("node", ["src/app.js"], {
+  const restartedBackend = spawn("node", [appPath], {
     env: { ...process.env, PORT: "8000" },
     stdio: ["pipe", "pipe", "pipe"],
   });

@@ -62,7 +62,6 @@ export const Auth = () => {
     try {
       await handleRegister(name, username, password);
       setSuccessMsg("Account created successfully! Signing you in...");
-      // Auto login post registration
       await handleLogin(username, password);
       navigate("/home");
     } catch (err) {
@@ -87,14 +86,14 @@ export const Auth = () => {
       <Navbar />
 
       <main style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "40px 20px" }}>
-        <div style={{ width: "100%", maxWidth: "460px" }} className="animate-entrance">
-          <Card variant="glass" style={{ border: "var(--border-subtle)", boxShadow: "0 20px 50px rgba(0,0,0,0.6)" }}>
+        <div style={{ width: "100%", maxWidth: "440px" }} className="animate-entrance">
+          <Card variant="glass">
             {/* Header / Brand */}
             <div style={{ textAlign: "center", marginBottom: "28px" }}>
               <div
                 style={{
-                  width: "52px",
-                  height: "52px",
+                  width: "48px",
+                  height: "48px",
                   borderRadius: "var(--radius-md)",
                   background: "var(--brand-gradient)",
                   margin: "0 auto 16px auto",
@@ -104,10 +103,10 @@ export const Auth = () => {
                   boxShadow: "var(--glow-cyan)",
                 }}
               >
-                <VideocamIcon style={{ color: "#FFFFFF", fontSize: "30px" }} />
+                <VideocamIcon style={{ color: "#FFFFFF", fontSize: "28px" }} />
               </div>
               <h1 style={{ fontSize: "24px", fontWeight: "800", letterSpacing: "-0.5px" }}>
-                {activeTab === "login" ? "Welcome Back" : "Create Account"}
+                {activeTab === "login" ? "Sign In to SyncMeet" : "Create Account"}
               </h1>
               <p style={{ color: "var(--text-secondary)", fontSize: "14px", marginTop: "6px" }}>
                 {activeTab === "login"
@@ -123,7 +122,7 @@ export const Auth = () => {
                 gridTemplateColumns: "1fr 1fr",
                 background: "var(--surface-2)",
                 padding: "4px",
-                borderRadius: "var(--radius-md)",
+                borderRadius: "var(--radius-pill)",
                 marginBottom: "24px",
               }}
             >
@@ -135,16 +134,16 @@ export const Auth = () => {
                   setSuccessMsg("");
                 }}
                 style={{
-                  padding: "10px",
+                  padding: "8px",
                   fontSize: "14px",
                   fontWeight: "600",
-                  borderRadius: "var(--radius-sm)",
+                  borderRadius: "var(--radius-pill)",
                   border: "none",
-                  background: activeTab === "login" ? "var(--surface-1)" : "transparent",
-                  color: activeTab === "login" ? "var(--cyan-accent)" : "var(--text-secondary)",
+                  background: activeTab === "login" ? "var(--brand-gradient)" : "transparent",
+                  color: activeTab === "login" ? "#FFFFFF" : "var(--text-secondary)",
                   cursor: "pointer",
                   transition: "all var(--dur-normal) var(--ease-spring)",
-                  boxShadow: activeTab === "login" ? "0 2px 8px rgba(0,0,0,0.3)" : "none",
+                  boxShadow: activeTab === "login" ? "var(--glow-cyan)" : "none",
                 }}
               >
                 Sign In
@@ -157,16 +156,16 @@ export const Auth = () => {
                   setSuccessMsg("");
                 }}
                 style={{
-                  padding: "10px",
+                  padding: "8px",
                   fontSize: "14px",
                   fontWeight: "600",
-                  borderRadius: "var(--radius-sm)",
+                  borderRadius: "var(--radius-pill)",
                   border: "none",
-                  background: activeTab === "register" ? "var(--surface-1)" : "transparent",
-                  color: activeTab === "register" ? "var(--cyan-accent)" : "var(--text-secondary)",
+                  background: activeTab === "register" ? "var(--brand-gradient)" : "transparent",
+                  color: activeTab === "register" ? "#FFFFFF" : "var(--text-secondary)",
                   cursor: "pointer",
                   transition: "all var(--dur-normal) var(--ease-spring)",
-                  boxShadow: activeTab === "register" ? "0 2px 8px rgba(0,0,0,0.3)" : "none",
+                  boxShadow: activeTab === "register" ? "var(--glow-cyan)" : "none",
                 }}
               >
                 Register

@@ -50,7 +50,7 @@ export const Input = ({
             fontFamily: "inherit",
             outline: "none",
             transition: "all var(--dur-normal) var(--ease-spring)",
-            boxShadow: error ? "0 0 12px rgba(244, 63, 94, 0.2)" : "none",
+            boxShadow: error ? "0 0 8px rgba(244, 63, 94, 0.25)" : "none",
             ...style,
           }}
           {...props}
@@ -65,7 +65,7 @@ export const Input = ({
               right: "12px",
               background: "none",
               border: "none",
-              color: "var(--text-secondary)",
+              color: "var(--cyan-accent)",
               cursor: "pointer",
               fontSize: "13px",
               fontWeight: "600",
