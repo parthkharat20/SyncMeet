@@ -1,151 +1,256 @@
-import React, { useState, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
-import withAuth from '../utils/withAuth.jsx';
-import IconButton from '@mui/material/IconButton';
-import '../App.css';
-import RestoreIcon from '@mui/icons-material/Restore';
-import LogoutIcon from '@mui/icons-material/Logout';
-import AddIcon from '@mui/icons-material/Add';
-import Button from '@mui/material/Button';
-import TextField from '@mui/material/TextField';
-import { AuthContext } from '../contexts/AuthContext.jsx';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth";
+import withAuth from "../utils/withAuth";
+import api from "../services/api";
+import Navbar from "../components/layout/Navbar";
+import Card from "../components/ui/Card";
+import Button from "../components/ui/Button";
+import Input from "../components/ui/Input";
+import Alert from "../components/ui/Alert";
+import Badge from "../components/ui/Badge";
+import VideocamIcon from "@mui/icons-material/Videocam";
+import AddBoxIcon from "@mui/icons-material/AddBox";
+import KeyboardIcon from "@mui/icons-material/Keyboard";
+import HistoryIcon from "@mui/icons-material/History";
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 
-function HomeComponent() {
-  let navigate = useNavigate();
+export const Home = () => {
+  const navigate = useNavigate();
+  const { userData, addToUserHistory, getHistoryOfUser } = useAuth();
+
   const [meetingCode, setMeetingCode] = useState("");
-  const [newCode] = useState(() => Math.random().toString(36).substring(2, 9).toUpperCase());
-  const { addToUserHistory, handleLogout, userData } = useContext(AuthContext);
+  const [errorMsg, setErrorMsg] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [recentMeetings, setRecentMeetings] = useState([]);
 
-  let handleJoinVideoCall = async () => {
-    if (!meetingCode.trim()) return;
-    try {
-      await addToUserHistory(meetingCode.trim());
-    } catch (e) {
-      console.error("Could not record meeting history:", e);
+  useEffect(() => {
+    const fetchRecent = async () => {
+      try {
+        const history = await getHistoryOfUser();
+        if (Array.isArray(history)) {
+          setRecentMeetings(history.slice(0, 4));
+        }
+      } catch (e) {
+        console.warn("Could not fetch recent meetings:", e);
+      }
+    };
+    fetchRecent();
+  }, []);
+
+  // Generate 7-char alphanumeric meeting code
+  const generateMeetingCode = () => {
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    let code = "";
+    for (let i = 0; i < 7; i++) {
+      code += chars.charAt(Math.floor(Math.random() * chars.length));
     }
-    navigate(`/${meetingCode.trim()}`);
+    return code;
   };
 
-  let handleNewMeeting = async () => {
+  const handleCreateMeeting = async () => {
+    setLoading(true);
+    setErrorMsg("");
     try {
+      const newCode = generateMeetingCode();
       await addToUserHistory(newCode);
+      navigate(`/${newCode}`);
     } catch (e) {
-      console.error("Could not record meeting history:", e);
+      console.error("[CREATE MEETING ERROR]", e);
+      setErrorMsg("Failed to generate new meeting room. Please try again.");
+    } finally {
+      setLoading(false);
     }
-    navigate(`/${newCode}`);
   };
 
-  let onLogout = () => {
-    if (handleLogout) handleLogout();
-    else localStorage.removeItem("token");
-    navigate("/auth");
+  const handleJoinMeeting = async (e) => {
+    if (e) e.preventDefault();
+    const cleanCode = meetingCode.trim().toUpperCase();
+
+    if (!cleanCode) {
+      setErrorMsg("Please enter a meeting code.");
+      return;
+    }
+
+    setLoading(true);
+    setErrorMsg("");
+
+    try {
+      // Phase 15 Ended Meeting Status Check
+      const statusRes = await api.get(`/check_meeting_status/${cleanCode}`);
+      if (statusRes.data && statusRes.data.ended) {
+        setErrorMsg("This meeting has already ended and cannot be rejoined.");
+        setLoading(false);
+        return;
+      }
+
+      await addToUserHistory(cleanCode);
+      navigate(`/${cleanCode}`);
+    } catch (e) {
+      console.error("[JOIN MEETING ERROR]", e);
+      setErrorMsg("Unable to join meeting. Please check the code and try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className='homeContainer'>
-      {/* Navbar */}
-      <div className='homeNav'>
-        <h2 className='homeLogo'>SyncMeet</h2>
-        <div className='homeNavRight'>
-          <IconButton onClick={() => navigate("/history")} title="History" sx={{ color: '#aaa' }}>
-            <RestoreIcon />
-          </IconButton>
-          <span className='homeNavLabel'>History</span>
-          <Button
-            onClick={onLogout}
-            startIcon={<LogoutIcon />}
-            sx={{ color: '#aaa', textTransform: 'none', ml: 1 }}
-          >
-            Logout
-          </Button>
-        </div>
-      </div>
+    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "var(--bg-dark)" }}>
+      <Navbar />
 
-      {/* Main content */}
-      <div className='homeMain'>
-        <div className='homeLeft'>
-          <div className='homeGreeting'>
-            Good to see you {userData?.name ? `, ${userData.name}` : ''} 👋
-          </div>
-          <h1 className='homeHeadline'>
-            Quality Video Calls,<br />
-            <span className='homeAccent'>Anytime. Anywhere.</span>
+      <main style={{ flex: 1, padding: "40px 24px", maxWidth: "1200px", margin: "0 auto", width: "100%" }}>
+        {/* Welcome Header */}
+        <div style={{ marginBottom: "40px" }} className="animate-entrance">
+          <Badge variant="cyan" style={{ marginBottom: "12px" }}>
+            LOBBY DASHBOARD
+          </Badge>
+          <h1 style={{ fontSize: "32px", fontWeight: "800", letterSpacing: "-0.5px" }}>
+            Welcome back, {userData?.name || "Participant"}! 👋
           </h1>
-          <p className='homeSubtext'>
-            Start a new meeting instantly or join with a code.
+          <p style={{ color: "var(--text-secondary)", fontSize: "16px", marginTop: "6px" }}>
+            Start an instant meeting or join an ongoing call with your team.
           </p>
+        </div>
 
-          <div className='homeMeetActions'>
-            {/* New meeting */}
-            <div className='homeMeetCard newMeet' onClick={handleNewMeeting}>
-              <div className='homeMeetIcon'><AddIcon /></div>
-              <div>
-                <p className='homeMeetTitle'>New Meeting</p>
-                <p className='homeMeetSub'>Start instantly</p>
+        {errorMsg && (
+          <div style={{ marginBottom: "28px" }}>
+            <Alert variant="error" onClose={() => setErrorMsg("")}>
+              {errorMsg}
+            </Alert>
+          </div>
+        )}
+
+        {/* Action Cards Grid */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+            gap: "24px",
+            marginBottom: "48px",
+          }}
+        >
+          {/* Create Instant Meeting Card */}
+          <Card variant="glow" style={{ display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+            <div>
+              <div
+                style={{
+                  width: "48px",
+                  height: "48px",
+                  borderRadius: "var(--radius-md)",
+                  background: "rgba(6, 182, 212, 0.15)",
+                  color: "var(--cyan-accent)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  marginBottom: "20px",
+                }}
+              >
+                <AddBoxIcon style={{ fontSize: "28px" }} />
               </div>
+              <h2 style={{ fontSize: "20px", fontWeight: "700", marginBottom: "8px" }}>
+                Instant New Meeting
+              </h2>
+              <p style={{ color: "var(--text-secondary)", fontSize: "14px", lineHeight: "1.5", marginBottom: "24px" }}>
+                Create a secure WebRTC room in one click and invite participants with your unique meeting code.
+              </p>
             </div>
 
-            {/* Join with code */}
-            <div className='homeMeetCard joinMeet'>
-              <div className='joinInputRow'>
-                <TextField
-                  label="Meeting Code"
-                  variant="outlined"
-                  size="small"
-                  value={meetingCode}
-                  onChange={(e) => setMeetingCode(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleJoinVideoCall()}
-                  sx={{
-                    flex: 1,
-                    '& .MuiOutlinedInput-root': {
-                      borderRadius: '10px',
-                      color: 'white',
-                      '& fieldset': { borderColor: 'rgba(255,255,255,0.15)' },
-                      '&:hover fieldset': { borderColor: 'rgba(255,152,57,0.4)' },
-                      '&.Mui-focused fieldset': { borderColor: '#FF9839' },
-                    },
-                    '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.4)' },
-                    '& .MuiInputLabel-root.Mui-focused': { color: '#FF9839' },
+            <Button variant="primary" size="lg" fullWidth={true} onClick={handleCreateMeeting} loading={loading}>
+              <VideocamIcon />
+              <span>Start Instant Meeting</span>
+            </Button>
+          </Card>
+
+          {/* Join Meeting Card */}
+          <Card variant="glass" style={{ display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+            <div>
+              <div
+                style={{
+                  width: "48px",
+                  height: "48px",
+                  borderRadius: "var(--radius-md)",
+                  background: "rgba(139, 92, 246, 0.15)",
+                  color: "var(--violet-accent)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  marginBottom: "20px",
+                }}
+              >
+                <KeyboardIcon style={{ fontSize: "28px" }} />
+              </div>
+              <h2 style={{ fontSize: "20px", fontWeight: "700", marginBottom: "8px" }}>
+                Join Existing Meeting
+              </h2>
+              <p style={{ color: "var(--text-secondary)", fontSize: "14px", lineHeight: "1.5", marginBottom: "20px" }}>
+                Enter a 7-character room code to enter an active video call.
+              </p>
+            </div>
+
+            <form onSubmit={handleJoinMeeting} style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+              <Input
+                icon={KeyboardIcon}
+                placeholder="e.g. ABC123X"
+                value={meetingCode}
+                onChange={(e) => setMeetingCode(e.target.value.toUpperCase())}
+                maxLength={20}
+              />
+              <Button type="submit" variant="secondary" size="lg" fullWidth={true} loading={loading}>
+                <span>Join Meeting</span>
+                <ArrowForwardIcon style={{ fontSize: "18px" }} />
+              </Button>
+            </form>
+          </Card>
+        </div>
+
+        {/* Recent Activity Section */}
+        {recentMeetings.length > 0 && (
+          <div>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <HistoryIcon style={{ color: "var(--cyan-accent)", fontSize: "22px" }} />
+                <h3 style={{ fontSize: "18px", fontWeight: "700" }}>Recent Activity</h3>
+              </div>
+              <Button variant="ghost" size="sm" onClick={() => navigate("/history")}>
+                View All History →
+              </Button>
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "16px" }}>
+              {recentMeetings.map((item, index) => (
+                <Card
+                  key={item._id || index}
+                  variant="surface"
+                  style={{
+                    padding: "16px 20px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    cursor: "pointer",
                   }}
-                />
-                <Button
-                  variant="contained"
-                  onClick={handleJoinVideoCall}
-                  sx={{
-                    background: '#FF9839',
-                    borderRadius: '10px',
-                    fontWeight: 700,
-                    textTransform: 'none',
-                    px: 3,
-                    '&:hover': { background: '#e8872a' }
+                  onClick={() => {
+                    setMeetingCode(item.meetingCode);
                   }}
                 >
-                  Join
-                </Button>
-              </div>
+                  <div>
+                    <span style={{ fontSize: "16px", fontWeight: "700", fontFamily: "var(--font-mono)", color: "var(--cyan-accent)" }}>
+                      {item.meetingCode}
+                    </span>
+                    <p style={{ fontSize: "12px", color: "var(--text-muted)", marginTop: "4px" }}>
+                      {item.date ? new Date(item.date).toLocaleDateString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "Recent"}
+                    </p>
+                  </div>
+                  <Badge variant={item.status === "ended" ? "error" : "success"}>
+                    {item.status === "ended" ? "Ended" : "Active"}
+                  </Badge>
+                </Card>
+              ))}
             </div>
           </div>
-        </div>
-
-        <div className='homeRight'>
-          <div className='homeIllustration'>
-            <div className='illGrid'>
-              <div className='illTile'><span>A</span></div>
-              <div className='illTile active'><span>B</span></div>
-              <div className='illTile'><span>C</span></div>
-              <div className='illTile'><span>D</span></div>
-            </div>
-            <div className='illBar'>
-              <div className='illDot red' />
-              <div className='illDot' />
-              <div className='illDot' />
-              <div className='illDot' />
-            </div>
-          </div>
-        </div>
-      </div>
+        )}
+      </main>
     </div>
   );
-}
+};
 
-export default withAuth(HomeComponent);
+export default withAuth(Home);

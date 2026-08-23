@@ -1,30 +1,38 @@
-import React, { useEffect, useState, useContext } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { AuthContext } from "../contexts/AuthContext.jsx";
-import IconButton from '@mui/material/IconButton';
-import Button from '@mui/material/Button';
-import HomeIcon from '@mui/icons-material/Home';
-import VideoCallIcon from '@mui/icons-material/VideoCall';
-import AccessTimeIcon from '@mui/icons-material/AccessTime';
-import withAuth from "../utils/withAuth.jsx";
+import { useAuth } from "../hooks/useAuth";
+import withAuth from "../utils/withAuth";
+import Navbar from "../components/layout/Navbar";
+import Card from "../components/ui/Card";
+import Button from "../components/ui/Button";
+import Badge from "../components/ui/Badge";
+import Alert from "../components/ui/Alert";
+import Spinner from "../components/ui/Spinner";
+import HistoryIcon from "@mui/icons-material/History";
+import VideocamIcon from "@mui/icons-material/Videocam";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import CheckIcon from "@mui/icons-material/Check";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
-// FIX: was using placeholder "Word of the Day" card content — now shows real meeting data
-// FIX: added withAuth protection, proper error handling, and loading state
-function History() {
-  const { getHistoryOfUser, addToUserHistory } = useContext(AuthContext);
+export const History = () => {
+  const navigate = useNavigate();
+  const { getHistoryOfUser } = useAuth();
+
   const [meetings, setMeetings] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const routeTo = useNavigate();
+  const [errorMsg, setErrorMsg] = useState("");
+  const [copiedCode, setCopiedCode] = useState(null);
 
   useEffect(() => {
     const fetchHistory = async () => {
       try {
-        const history = await getHistoryOfUser();
-        // newest first
-        setMeetings([...history].reverse());
+        const data = await getHistoryOfUser();
+        if (Array.isArray(data)) {
+          setMeetings(data);
+        }
       } catch (e) {
-        setError('Could not load meeting history.');
+        console.error("[HISTORY FETCH ERROR]", e);
+        setErrorMsg("Failed to load meeting history. Please check your connection.");
       } finally {
         setLoading(false);
       }
@@ -32,94 +40,181 @@ function History() {
     fetchHistory();
   }, []);
 
-  const handleRejoin = async (code) => {
-    await addToUserHistory(code);
-    routeTo(`/${code}`);
+  const handleCopyCode = (code) => {
+    navigator.clipboard.writeText(code);
+    setCopiedCode(code);
+    setTimeout(() => setCopiedCode(null), 2000);
   };
 
-  const formatDate = (dateStr) => {
-    const d = new Date(dateStr);
-    return d.toLocaleDateString('en-IN', {
-      day: 'numeric', month: 'short', year: 'numeric',
-      hour: '2-digit', minute: '2-digit'
+  const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
+    const date = new Date(dateString);
+    return date.toLocaleDateString(undefined, {
+      weekday: "short",
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
   return (
-    <div className='historyContainer'>
-      <div className='historyNav'>
-        <IconButton onClick={() => routeTo("/home")} sx={{ color: 'white' }}>
-          <HomeIcon />
-        </IconButton>
-        <h2 className='historyTitle'>Meeting History</h2>
-      </div>
+    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "var(--bg-dark)" }}>
+      <Navbar />
 
-      <div className='historyContent'>
-        {loading && (
-          <div className='historyEmpty'>
-            <p>Loading...</p>
-          </div>
-        )}
-
-        {!loading && error && (
-          <div className='historyEmpty'>
-            <p className='historyError'>{error}</p>
-            <Button onClick={() => routeTo('/home')} sx={{ color: '#FF9839', mt: 2 }}>
-              Go Home
+      <main style={{ flex: 1, padding: "40px 24px", maxWidth: "1100px", margin: "0 auto", width: "100%" }}>
+        {/* Header */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "32px" }} className="animate-entrance">
+          <div>
+            <Button variant="ghost" size="sm" onClick={() => navigate("/home")} style={{ marginBottom: "12px" }}>
+              <ArrowBackIcon style={{ fontSize: "16px" }} />
+              <span>Back to Lobby</span>
             </Button>
+            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+              <div
+                style={{
+                  width: "42px",
+                  height: "42px",
+                  borderRadius: "var(--radius-md)",
+                  background: "rgba(6, 182, 212, 0.15)",
+                  color: "var(--cyan-accent)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <HistoryIcon style={{ fontSize: "24px" }} />
+              </div>
+              <h1 style={{ fontSize: "28px", fontWeight: "800" }}>Meeting Activity History</h1>
+            </div>
+          </div>
+          <Badge variant="cyan">{meetings.length} Total Records</Badge>
+        </div>
+
+        {errorMsg && (
+          <div style={{ marginBottom: "24px" }}>
+            <Alert variant="error">{errorMsg}</Alert>
           </div>
         )}
 
-        {!loading && !error && meetings.length === 0 && (
-          <div className='historyEmpty'>
-            <VideoCallIcon sx={{ fontSize: 56, color: 'rgba(255,255,255,0.15)', mb: 2 }} />
-            <p>No meetings yet.</p>
-            <Button
-              variant="contained"
-              onClick={() => routeTo('/home')}
-              sx={{ background: '#FF9839', mt: 2, textTransform: 'none', borderRadius: '10px' }}
+        {loading ? (
+          <div style={{ padding: "80px 0", textAlign: "center", color: "var(--text-secondary)" }}>
+            <Spinner size={32} color="var(--cyan-accent)" />
+            <p style={{ marginTop: "16px", fontSize: "15px" }}>Loading meeting activity records...</p>
+          </div>
+        ) : meetings.length === 0 ? (
+          <Card variant="glass" style={{ padding: "60px 24px", textAlign: "center" }}>
+            <div
+              style={{
+                width: "64px",
+                height: "64px",
+                borderRadius: "50%",
+                background: "var(--surface-2)",
+                color: "var(--text-muted)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                margin: "0 auto 20px auto",
+              }}
             >
-              Start your first meeting
+              <VideocamIcon style={{ fontSize: "32px" }} />
+            </div>
+            <h3 style={{ fontSize: "20px", fontWeight: "700", marginBottom: "8px" }}>No Meeting History Found</h3>
+            <p style={{ color: "var(--text-secondary)", fontSize: "14px", marginBottom: "24px" }}>
+              You haven't created or joined any video calls yet.
+            </p>
+            <Button variant="primary" size="md" onClick={() => navigate("/home")}>
+              Start a Meeting
             </Button>
-          </div>
-        )}
-
-        {!loading && !error && meetings.length > 0 && (
-          <div className='historyList'>
-            {meetings.map((meeting, idx) => (
-              <div className='historyCard' key={meeting._id || idx}>
-                <div className='historyCardLeft'>
-                  <div className='historyCodeBadge'>
-                    <VideoCallIcon sx={{ fontSize: 18 }} />
-                    <span>{meeting.meetingCode}</span>
+          </Card>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+            {meetings.map((item, index) => (
+              <Card
+                key={item._id || index}
+                variant="surface"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  padding: "20px 24px",
+                  flexWrap: "wrap",
+                  gap: "16px",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+                  <div
+                    style={{
+                      width: "44px",
+                      height: "44px",
+                      borderRadius: "var(--radius-md)",
+                      background: "var(--surface-2)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      color: "var(--cyan-accent)",
+                    }}
+                  >
+                    <VideocamIcon />
                   </div>
-                  <div className='historyDateRow'>
-                    <AccessTimeIcon sx={{ fontSize: 14, color: 'rgba(255,255,255,0.4)' }} />
-                    <span className='historyDate'>{formatDate(meeting.date)}</span>
+
+                  <div>
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                      <span
+                        style={{
+                          fontSize: "18px",
+                          fontWeight: "700",
+                          fontFamily: "var(--font-mono)",
+                          color: "var(--text-primary)",
+                          letterSpacing: "0.5px",
+                        }}
+                      >
+                        {item.meetingCode}
+                      </span>
+                      <button
+                        onClick={() => handleCopyCode(item.meetingCode)}
+                        style={{
+                          background: "none",
+                          border: "none",
+                          color: copiedCode === item.meetingCode ? "var(--color-success)" : "var(--text-muted)",
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                        }}
+                        title="Copy Code"
+                      >
+                        {copiedCode === item.meetingCode ? <CheckIcon style={{ fontSize: "16px" }} /> : <ContentCopyIcon style={{ fontSize: "16px" }} />}
+                      </button>
+                    </div>
+                    <span style={{ fontSize: "13px", color: "var(--text-secondary)", marginTop: "4px", display: "block" }}>
+                      Joined on {formatDate(item.date)}
+                    </span>
                   </div>
                 </div>
-                <Button
-                  variant="outlined"
-                  size="small"
-                  onClick={() => handleRejoin(meeting.meetingCode)}
-                  sx={{
-                    color: '#FF9839',
-                    borderColor: '#FF9839',
-                    borderRadius: '8px',
-                    textTransform: 'none',
-                    fontWeight: 600,
-                    '&:hover': { background: 'rgba(255,152,57,0.1)', borderColor: '#FF9839' }
-                  }}
-                >
-                  Rejoin
-                </Button>
-              </div>
+
+                <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+                  <Badge variant={item.status === "ended" ? "error" : "success"}>
+                    {item.status === "ended" ? "Meeting Ended" : "Active Room"}
+                  </Badge>
+
+                  {item.status !== "ended" && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => navigate(`/${item.meetingCode}`)}
+                    >
+                      Rejoin Call
+                    </Button>
+                  )}
+                </div>
+              </Card>
             ))}
           </div>
         )}
-      </div>
+      </main>
     </div>
   );
-}
+};
 
 export default withAuth(History);

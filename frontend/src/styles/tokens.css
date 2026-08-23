@@ -1,0 +1,47 @@
+:root {
+  /* Surface Scale */
+  --bg-dark: #0B0F19;
+  --surface-1: #111827;
+  --surface-2: #1E293B;
+  --surface-3: #334155;
+  --surface-glass: rgba(17, 24, 39, 0.75);
+
+  /* Foreground Scale */
+  --text-primary: #F8FAFC;
+  --text-secondary: #94A3B8;
+  --text-muted: #64748B;
+
+  /* Brand Accents & Gradients */
+  --cyan-accent: #06B6D4;
+  --blue-accent: #3B82F6;
+  --violet-accent: #8B5CF6;
+  --brand-gradient: linear-gradient(135deg, #06B6D4 0%, #3B82F6 50%, #8B5CF6 100%);
+  --brand-gradient-hover: linear-gradient(135deg, #0891B2 0%, #2563EB 50%, #7C3AED 100%);
+  --glow-cyan: 0 0 24px rgba(6, 182, 212, 0.35), 0 4px 16px rgba(0, 0, 0, 0.4);
+
+  /* Semantics */
+  --color-success: #10B981;
+  --color-success-bg: rgba(16, 185, 129, 0.12);
+  --color-error: #F43F5E;
+  --color-error-bg: rgba(244, 63, 94, 0.12);
+  --color-warning: #F59E0B;
+  --color-warning-bg: rgba(245, 158, 11, 0.12);
+  --color-info: #38BDF8;
+  --color-info-bg: rgba(56, 189, 248, 0.12);
+
+  /* Hairline Borders */
+  --border-subtle: 1px solid rgba(255, 255, 255, 0.08);
+  --border-cyan: 1px solid rgba(6, 182, 212, 0.4);
+
+  /* Motion Signature */
+  --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-fast: 120ms;
+  --dur-normal: 240ms;
+  --dur-slow: 360ms;
+
+  /* Radii */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-pill: 9999px;
+}

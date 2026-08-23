@@ -1,11 +1,11 @@
-import React, { useContext, useEffect } from "react";
+import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { AuthContext } from "../contexts/AuthContext.jsx";
+import { useAuth } from "../hooks/useAuth";
 
 const withAuth = (WrappedComponent) => {
   const AuthComponent = (props) => {
     const navigate = useNavigate();
-    const { loading } = useContext(AuthContext);
+    const { loading } = useAuth();
 
     const isAuthenticated = () => {
       return !!localStorage.getItem("token");
@@ -18,7 +18,11 @@ const withAuth = (WrappedComponent) => {
     }, [loading, navigate]);
 
     if (loading) {
-      return <div style={{ color: '#fff', padding: '2rem', textAlign: 'center' }}>Loading session...</div>;
+      return (
+        <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh", color: "#94A3B8" }}>
+          Loading session...
+        </div>
+      );
     }
 
     if (!isAuthenticated()) return null;
