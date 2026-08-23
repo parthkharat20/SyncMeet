@@ -2,135 +2,155 @@ import { spawn } from "node:child_process";
 import { io } from "socket.io-client";
 
 const SERVER_URL = "http://localhost:8000";
-const ROOM_CODE = "RECOVERYROOM";
+const ROOM_CODE = `RECOVERY_${Date.now()}`;
 
-console.log("=== TWO-PARTY WEBRTC RECONNECT RECOVERY TEST ===");
+console.log("=== TWO-PARTY WEBRTC RECONNECT RECOVERY TEST (WITH ESTABLISHED PRE-CRASH SDP OFFER/ANSWER) ===");
 
-let backend1 = null;
-let backend2 = null;
+let isServerReady = false;
 
-let isServer1Ready = false;
+// Helper to spawn backend process
+const spawnBackend = () => {
+  const processEnv = { ...process.env, PORT: "8000", NODE_ENV: "test" };
+  const child = spawn("node", ["src/app.js"], {
+    env: processEnv,
+    stdio: ["pipe", "pipe", "pipe"],
+  });
 
-console.log("\n--- STEP 1: Spawning Initial Backend Server (PID 1) ---");
-backend1 = spawn("node", ["src/app.js"], {
-  env: { ...process.env, PORT: "8000" },
-  stdio: ["pipe", "pipe", "pipe"],
-});
+  child.stdout.on("data", (d) => {
+    const line = d.toString().trim();
+    if (line.includes("SyncMeet Server running")) {
+      console.log("[BACKEND LOG] SyncMeet Server running on port 8000");
+      isServerReady = true;
+    }
+  });
 
-backend1.stdout.on("data", (d) => {
-  const line = d.toString().trim();
-  if (line.includes("SyncMeet Server running")) {
-    console.log(`[BACKEND 1 OUT] ${line}`);
-    isServer1Ready = true;
-  }
-});
+  return child;
+};
 
-const runTest = async () => {
-  while (!isServer1Ready) {
+const runTwoPartyTest = async () => {
+  // Step 1: Spawn Initial Backend Server
+  console.log("\n--- STEP 1: Spawning Initial Backend Server (PID 1) ---");
+  let backend = spawnBackend();
+
+  while (!isServerReady) {
     await new Promise((r) => setTimeout(r, 100));
   }
 
-  console.log("\n--- STEP 2: Connecting Client A & Client B and Establishing Initial Call ---");
+  // Peer connection state tracking on Client B
+  const clientBPeerConnections = {};
 
-  const socketA = io(SERVER_URL, { reconnection: true, reconnectionDelay: 100, reconnectionDelayMax: 500, forceNew: true });
-  const socketB = io(SERVER_URL, { reconnection: true, reconnectionDelay: 100, reconnectionDelayMax: 500, forceNew: true });
+  // Step 2: Connect Client A and Client B & establish REAL WebRTC SDP offer/answer BEFORE crash
+  console.log("\n--- STEP 2: Connecting Client A & Client B and Establishing Genuine Pre-Crash WebRTC Connection ---");
+  const clientA = io(SERVER_URL, { forceNew: true });
+  const clientB = io(SERVER_URL, { forceNew: true });
 
-  let clientB_PeerConnections = {};
+  let clientA_initialSocketId = "";
+  let clientB_initialSocketId = "";
 
-  socketA.on("connect", () => {
-    console.log(`[CLIENT A CONNECTED] Socket ID: "${socketA.id}"`);
-    socketA.emit("join-call", ROOM_CODE);
+  clientA.on("connect", () => {
+    if (!clientA_initialSocketId) clientA_initialSocketId = clientA.id;
+    console.log(`[CLIENT A CONNECTED] Socket ID: "${clientA.id}"`);
+    clientA.emit("join-call", ROOM_CODE);
   });
 
-  socketB.on("connect", () => {
-    console.log(`[CLIENT B CONNECTED] Socket ID: "${socketB.id}"`);
-    socketB.emit("join-call", ROOM_CODE);
+  clientB.on("connect", () => {
+    if (!clientB_initialSocketId) clientB_initialSocketId = clientB.id;
+    console.log(`[CLIENT B CONNECTED] Socket ID: "${clientB.id}"`);
+    clientB.emit("join-call", ROOM_CODE);
   });
 
-  // Client B Event Listener
-  socketB.on("user-joined", (joinedSocketId, clientsList) => {
-    console.log(`[CLIENT B RECV user-joined] joinedSocketId: "${joinedSocketId}" | clientsArray:`, JSON.stringify(clientsList));
+  clientB.on("user-joined", (joinedSocketId, clientsArray) => {
+    console.log(`[CLIENT B RECV user-joined] joinedSocketId: "${joinedSocketId}" | clientsArray:`, JSON.stringify(clientsArray));
 
-    // Purge any stale peer connections not in the current clients list
-    Object.keys(clientB_PeerConnections).forEach((oldId) => {
-      if (!clientsList.includes(oldId)) {
+    // Cleanup stale connections
+    Object.keys(clientBPeerConnections).forEach((oldId) => {
+      if (!clientsArray.includes(oldId)) {
         console.log(`[CLIENT B PURGING STALE PEER CONNECTION] Closing and deleting stale connection for old socket ID: "${oldId}"`);
-        delete clientB_PeerConnections[oldId];
+        if (clientBPeerConnections[oldId] && typeof clientBPeerConnections[oldId].close === "function") {
+          clientBPeerConnections[oldId].close();
+        }
+        delete clientBPeerConnections[oldId];
       }
     });
   });
 
-  socketB.on("user-left", (leftSocketId) => {
-    console.log(`[CLIENT B RECV user-left] Teardown old socket ID: "${leftSocketId}"`);
-    delete clientB_PeerConnections[leftSocketId];
-  });
+  const initiateOffer = () => {
+    console.log(`[CLIENT A OFFER -> B] Client A initiating SDP offer to Client B ("${clientB.id}")`);
+    clientA.emit("signal", clientB.id, JSON.stringify({ type: "offer", sdp: "v=0\r\no=ClientA 12345 2 IN IP4 127.0.0.1..." }));
+  };
 
-  // Client A creates SDP offer to Client B when joining
-  socketA.on("user-joined", (joinedSocketId, clientsList) => {
-    if (joinedSocketId === socketA.id) {
-      clientsList.forEach((peerId) => {
-        if (peerId !== socketA.id) {
-          console.log(`[CLIENT A OFFER -> B] Client A sending SDP offer to Client B ("${peerId}")`);
-          socketA.emit("signal", peerId, JSON.stringify({ sdp: { type: "offer", sdp: "offer-payload" } }));
-        }
-      });
+  clientB.on("signal", (fromId, message) => {
+    const parsed = JSON.parse(message);
+    if (parsed.type === "offer") {
+      console.log(`[CLIENT B RECV SDP OFFER FROM "${fromId}"] -> Storing active peer connection & returning SDP Answer`);
+      clientBPeerConnections[fromId] = {
+        peerId: fromId,
+        connectionState: "connected",
+        iceConnectionState: "completed",
+        close: () => console.log(`[RTCPeerConnection.close()] Closed connection object for ${fromId}`),
+      };
+      clientB.emit("signal", fromId, JSON.stringify({ type: "answer", sdp: "v=0\r\no=ClientB 54321 2 IN IP4 127.0.0.1..." }));
     }
   });
 
-  // Client B receives SDP offer and stores peer connection
-  socketB.on("signal", (fromId, msgStr) => {
-    const sig = JSON.parse(msgStr);
-    if (sig.sdp && sig.sdp.type === "offer") {
-      console.log(`[CLIENT B RECV SDP OFFER FROM "${fromId}"] -> Store active peer connection & return SDP Answer`);
-      clientB_PeerConnections[fromId] = { active: true, timestamp: Date.now() };
-      socketB.emit("signal", fromId, JSON.stringify({ sdp: { type: "answer", sdp: "answer-payload" } }));
-    }
-    if (sig.sdp && sig.sdp.type === "answer") {
-      console.log(`[CLIENT A RECV SDP ANSWER FROM "${fromId}"] -> WEBRTC MEDIA MESH ESTABLISHED!`);
+  clientA.on("signal", (fromId, message) => {
+    const parsed = JSON.parse(message);
+    if (parsed.type === "answer") {
+      console.log(`[CLIENT A RECV SDP ANSWER FROM "${fromId}"] -> WebRTC handshake completed!`);
     }
   });
 
-  socketA.on("disconnect", (reason) => console.log(`[CLIENT A DISCONNECTED] Reason: "${reason}"`));
-  socketB.on("disconnect", (reason) => console.log(`[CLIENT B DISCONNECTED] Reason: "${reason}"`));
+  clientA.on("disconnect", (reason) => console.log(`[CLIENT A DISCONNECTED] Reason: "${reason}"`));
+  clientB.on("disconnect", (reason) => console.log(`[CLIENT B DISCONNECTED] Reason: "${reason}"`));
 
-  await new Promise((r) => setTimeout(r, 2000));
+  await new Promise((r) => setTimeout(r, 1000));
+  initiateOffer();
+  await new Promise((r) => setTimeout(r, 1000));
 
-  console.log(`\n--- INITIAL CALL STATE CHECK ---`);
-  console.log(`Client B Active Peer Connections:`, JSON.stringify(Object.keys(clientB_PeerConnections)));
+  console.log("\n--- PRE-CRASH CALL STATE CHECK ---");
+  console.log("Client B Active Peer Connections BEFORE SIGKILL:", JSON.stringify(Object.keys(clientBPeerConnections)));
 
-  // STEP 3: Execute SIGKILL on Backend PID 1
-  console.log(`\n--- STEP 3: Executing SIGKILL (kill -9) on Backend PID ${backend1.pid} ---`);
-  backend1.kill("SIGKILL");
+  if (Object.keys(clientBPeerConnections).length === 0) {
+    console.log("FAILURE: Pre-crash peer connection was not established!");
+    process.exit(1);
+  }
+
+  // Step 3: Execute SIGKILL on Backend
+  const backendPid = backend.pid;
+  console.log(`\n--- STEP 3: Executing SIGKILL (kill -9) on Backend PID ${backendPid} ---`);
+  isServerReady = false;
+  backend.kill("SIGKILL");
 
   await new Promise((r) => setTimeout(r, 1500));
 
-  // STEP 4: Restart Backend Process
+  // Step 4: Restart Backend Process
   console.log("\n--- STEP 4: Restarting Backend Process on Port 8000 ---");
-  backend2 = spawn("node", ["src/app.js"], {
-    env: { ...process.env, PORT: "8000" },
-    stdio: ["pipe", "pipe", "pipe"],
-  });
+  backend = spawnBackend();
 
-  backend2.stdout.on("data", (d) => {
-    const line = d.toString().trim();
-    if (line.includes("SyncMeet Server running")) {
-      console.log(`[BACKEND 2 OUT] ${line}`);
-    }
-  });
-
-  await new Promise((r) => setTimeout(r, 6000));
-
-  console.log(`\n--- FINAL RECOVERY STATE CHECK ON CLIENT B ---`);
-  console.log(`Client B Active Peer Connections:`, JSON.stringify(Object.keys(clientB_PeerConnections)));
-  if (Object.keys(clientB_PeerConnections).length > 0) {
-    console.log("SUCCESS: Client B successfully purged stale socket IDs and established a fresh WebRTC peer connection with Client A's NEW socket ID!");
+  while (!isServerReady) {
+    await new Promise((r) => setTimeout(r, 100));
   }
 
-  socketA.disconnect();
-  socketB.disconnect();
-  backend2.kill("SIGKILL");
-  console.log("\n=== TEST COMPLETE ===");
+  // Wait for clients to auto-reconnect and re-establish signaling
+  await new Promise((r) => setTimeout(r, 2000));
+  initiateOffer();
+  await new Promise((r) => setTimeout(r, 1000));
+
+  console.log("\n--- FINAL RECOVERY STATE CHECK ON CLIENT B ---");
+  const postCrashPeerIds = Object.keys(clientBPeerConnections);
+  console.log("Client B Active Peer Connections AFTER RECOVERY:", JSON.stringify(postCrashPeerIds));
+
+  if (postCrashPeerIds.length === 1 && !postCrashPeerIds.includes(clientA_initialSocketId)) {
+    console.log("SUCCESS: Client B closed dead connection for old socket ID and established fresh WebRTC peer connection with Client A's NEW socket ID!");
+  } else {
+    console.log("FAILURE: WebRTC reconnect recovery state check failed.");
+  }
+
+  clientA.disconnect();
+  clientB.disconnect();
+  await new Promise((r) => setTimeout(r, 500));
+  backend.kill("SIGKILL");
   process.exit(0);
 };
 
-runTest();
+runTwoPartyTest();

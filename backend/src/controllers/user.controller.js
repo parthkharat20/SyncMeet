@@ -7,8 +7,6 @@ const MAX_CONCURRENT_SESSIONS = 10;
 const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days TTL
 const MAX_FIELD_LENGTH = 10000;
 
-const isNonEmptyString = (val) => typeof val === "string" && val.trim().length > 0;
-
 const login = async (req, res) => {
   const { username, password } = req.body || {};
 
@@ -87,7 +85,7 @@ const register = async (req, res) => {
     return res.status(400).json({ message: "Invalid data types: name, username, and password must be strings" });
   }
 
-  if (!name.trim() || !username.trim() || !password.trim()) {
+  if (!name.trim() || !password.trim()) {
     return res.status(400).json({ message: "All fields cannot be empty" });
   }
 
@@ -183,13 +181,17 @@ const addToHistory = async (req, res) => {
 
     const newMeeting = new Meeting({
       user_id: userId,
-      meetingCode: meeting_code.trim(),
+      meetingCode: meeting_code.trim().toUpperCase(),
+      status: "active",
     });
 
     await newMeeting.save();
 
     return res.status(200).json({ message: "Meeting added to history" });
   } catch (error) {
+    if (error.code === 11000) {
+      return res.status(400).json({ message: "Active meeting with this code already exists" });
+    }
     return res.status(500).json({ message: "Error adding meeting to history", error: error.message });
   }
 };

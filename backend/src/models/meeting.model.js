@@ -26,6 +26,12 @@ const meetingSchema = new mongoose.Schema({
   },
 });
 
+// Enforce unique meetingCode ONLY for currently active meetings
+meetingSchema.index(
+  { meetingCode: 1, status: 1 },
+  { unique: true, partialFilterExpression: { status: "active" } }
+);
+
 const Meeting = mongoose.model("Meeting", meetingSchema);
 
 export default Meeting;
