@@ -1,10 +1,11 @@
 import { io } from "socket.io-client";
-import { API_BASE_URL } from "./api";
+import { getBackendUrl } from "./api";
 
 export const createSocketConnection = (customToken = null) => {
   const token = customToken || localStorage.getItem("token");
+  const serverUrl = getBackendUrl();
 
-  return io.connect(API_BASE_URL, {
+  return io.connect(serverUrl, {
     auth: { token },
     secure: false,
     reconnection: true,

@@ -1,18 +1,22 @@
 import axios from "axios";
 
-export const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:8000";
+export const getBackendUrl = () => {
+  return import.meta.env.VITE_BACKEND_URL || "http://localhost:8000";
+};
 
 const api = axios.create({
-  baseURL: `${API_BASE_URL}/api/users`,
   headers: {
     "Content-Type": "application/json",
   },
   timeout: 15000,
 });
 
-// Request interceptor: Automatically attach Bearer token if present
+// Dynamic Base URL Request Interceptor: Ensures requests always resolve against import.meta.env.VITE_BACKEND_URL
 api.interceptors.request.use(
   (config) => {
+    const backendUrl = getBackendUrl();
+    config.baseURL = `${backendUrl}/api/users`;
+
     const token = localStorage.getItem("token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -22,7 +26,7 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Response interceptor: Global 401 Unauthorized handling
+// Response Interceptor: Global 401 Unauthorized handling
 api.interceptors.response.use(
   (response) => response,
   (error) => {
