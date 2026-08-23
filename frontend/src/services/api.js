@@ -1,7 +1,13 @@
 import axios from "axios";
 
 export const getBackendUrl = () => {
-  return import.meta.env.VITE_BACKEND_URL || "http://localhost:8000";
+  const envUrl = import.meta.env.VITE_BACKEND_URL;
+  if (!envUrl && import.meta.env.MODE === "production") {
+    console.warn(
+      "[CONFIG WARNING] VITE_BACKEND_URL environment variable is undefined in production build! Defaulting to localhost:8000. Ensure VITE_BACKEND_URL is populated in production build environment."
+    );
+  }
+  return envUrl || "http://localhost:8000";
 };
 
 const api = axios.create({

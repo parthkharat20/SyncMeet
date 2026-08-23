@@ -44,4 +44,11 @@
   --radius-md: 12px;
   --radius-lg: 18px;
   --radius-pill: 9999px;
+
+  /* Spacing Scale */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
 }
