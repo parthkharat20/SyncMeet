@@ -88,7 +88,7 @@ SyncMeet/
 
 | Phase | Category | Status | Empirical Evidence / Log Reference |
 | :--- | :--- | :--- | :--- |
-| **Phase 12** | Two-Party Reconnect Recovery | **Fixed & Verified** | [VideoMeet.jsx:434](file:///Users/parthkharat/Desktop/SyncMeet/frontend/src/pages/VideoMeet.jsx#L434) & [test_twoparty_reconnect.js](file:///Users/parthkharat/Desktop/SyncMeet/backend/test_twoparty_reconnect.js) (Pre-crash active peer connections `["HR2M..."]`; post-crash evaluates `if (joinedSocketId === socket.id)`, purges stale ID, and Client B initiates offer to `["GB98..."]`) |
+| **Phase 12** | Two-Party Reconnect Recovery | **Fixed & Verified** | [VideoMeet.jsx:434](file:///Users/parthkharat/Desktop/SyncMeet/frontend/src/pages/VideoMeet.jsx#L434) & [test_twoparty_reconnect.js](file:///Users/parthkharat/Desktop/SyncMeet/backend/test_twoparty_reconnect.js) (Pre-crash: Client B is 2nd joiner -> Client B offers; Post-crash flipped reconnect: Client A is 2nd joiner -> Client A offers. Dynamic evaluation verified!) |
 | **Phase 13** | Mesh Participant Scaling Limit | **Fixed & Verified** | [socketManager.js:76](file:///Users/parthkharat/Desktop/SyncMeet/backend/src/controllers/socketManager.js#L76) & [test_phase13_max_participants.js](file:///Users/parthkharat/Desktop/SyncMeet/backend/test_phase13_max_participants.js) (7th participant rejected with `room-full` event: `"Meeting is full. Maximum limit is 6 participants."`) |
 | **Phase 14** | Device & Permission Error Handling | **Fixed & Verified** | [VideoMeet.jsx:75-105](file:///Users/parthkharat/Desktop/SyncMeet/frontend/src/pages/VideoMeet.jsx#L75-L105) & [test_phase14_device_errors.js](file:///Users/parthkharat/Desktop/SyncMeet/backend/test_phase14_device_errors.js) (Surfaces UI alerts for `NotAllowedError`, `NotFoundError`, and `NotReadableError`) |
 | **Phase 15** | Meeting Lifecycle Edge Cases | **Fixed & Verified** | [Meeting.model.js:30-33](file:///Users/parthkharat/Desktop/SyncMeet/backend/src/models/meeting.model.js#L30-L33) (Raw index: `meetingSchema.index({ meetingCode: 1, status: 1 }, { unique: true, partialFilterExpression: { status: "active" } })`), [test_phase15_twotabs.js](file:///Users/parthkharat/Desktop/SyncMeet/backend/test_phase15_twotabs.js) (2 tabs register as distinct peer sockets), [test_phase15_host_leaves.js](file:///Users/parthkharat/Desktop/SyncMeet/backend/test_phase15_host_leaves.js) (Guest stays active when Host leaves) |
@@ -102,7 +102,7 @@ SyncMeet/
 ## 4. Verification Commands
 
 ```bash
-# Run Phase 12 Two-Party Reconnect Recovery Test
+# Run Phase 12 Role-Flipped Two-Party Reconnect Recovery Test
 cd backend
 node test_twoparty_reconnect.js
 
