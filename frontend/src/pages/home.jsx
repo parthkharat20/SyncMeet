@@ -98,22 +98,22 @@ export const Home = () => {
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "var(--bg-dark)" }}>
       <Navbar />
 
-      <main style={{ flex: 1, padding: "40px 24px", maxWidth: "1200px", margin: "0 auto", width: "100%" }}>
+      <main style={{ flex: 1, padding: "var(--space-xl) var(--space-lg)", maxWidth: "1200px", margin: "0 auto", width: "100%" }}>
         {/* Welcome Header */}
-        <div style={{ marginBottom: "40px" }} className="animate-entrance">
-          <Badge variant="cyan" style={{ marginBottom: "12px" }}>
+        <div style={{ marginBottom: "var(--space-xl)" }} className="animate-entrance">
+          <Badge variant="cyan" style={{ marginBottom: "var(--space-sm)" }}>
             LOBBY DASHBOARD
           </Badge>
           <h1 style={{ fontSize: "32px", fontWeight: "800", letterSpacing: "-0.5px" }}>
             Welcome back, {userData?.name || "Participant"}! 👋
           </h1>
-          <p style={{ color: "var(--text-secondary)", fontSize: "16px", marginTop: "6px" }}>
+          <p style={{ color: "var(--text-secondary)", fontSize: "16px", marginTop: "var(--space-xs)" }}>
             Start an instant meeting or join an ongoing call with your team.
           </p>
         </div>
 
         {errorMsg && (
-          <div style={{ marginBottom: "28px" }}>
+          <div style={{ marginBottom: "var(--space-lg)" }}>
             <Alert variant="error" onClose={() => setErrorMsg("")}>
               {errorMsg}
             </Alert>
@@ -125,7 +125,7 @@ export const Home = () => {
           style={{
             display: "grid",
             gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
-            gap: "24px",
+            gap: "var(--space-lg)",
             marginBottom: "48px",
           }}
         >
@@ -142,15 +142,15 @@ export const Home = () => {
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  marginBottom: "20px",
+                  marginBottom: "var(--space-lg)",
                 }}
               >
                 <AddBoxIcon style={{ fontSize: "28px" }} />
               </div>
-              <h2 style={{ fontSize: "20px", fontWeight: "700", marginBottom: "8px" }}>
+              <h2 style={{ fontSize: "20px", fontWeight: "700", marginBottom: "var(--space-sm)" }}>
                 Instant New Meeting
               </h2>
-              <p style={{ color: "var(--text-secondary)", fontSize: "14px", lineHeight: "1.5", marginBottom: "24px" }}>
+              <p style={{ color: "var(--text-secondary)", fontSize: "14px", lineHeight: "1.5", marginBottom: "var(--space-lg)" }}>
                 Create a secure WebRTC room in one click and invite participants with your unique meeting code.
               </p>
             </div>
@@ -174,20 +174,20 @@ export const Home = () => {
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  marginBottom: "20px",
+                  marginBottom: "var(--space-lg)",
                 }}
               >
                 <KeyboardIcon style={{ fontSize: "28px" }} />
               </div>
-              <h2 style={{ fontSize: "20px", fontWeight: "700", marginBottom: "8px" }}>
+              <h2 style={{ fontSize: "20px", fontWeight: "700", marginBottom: "var(--space-sm)" }}>
                 Join Existing Meeting
               </h2>
-              <p style={{ color: "var(--text-secondary)", fontSize: "14px", lineHeight: "1.5", marginBottom: "20px" }}>
+              <p style={{ color: "var(--text-secondary)", fontSize: "14px", lineHeight: "1.5", marginBottom: "var(--space-md)" }}>
                 Enter a 7-character room code to enter an active video call.
               </p>
             </div>
 
-            <form onSubmit={handleJoinMeeting} style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+            <form onSubmit={handleJoinMeeting} style={{ display: "flex", flexDirection: "column", gap: "var(--space-sm)" }}>
               <Input
                 icon={KeyboardIcon}
                 placeholder="e.g. ABC123X"
@@ -206,7 +206,7 @@ export const Home = () => {
         {/* Recent Activity Section */}
         {recentMeetings.length > 0 && (
           <div>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "var(--space-md)" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                 <HistoryIcon style={{ color: "var(--cyan-accent)", fontSize: "22px" }} />
                 <h3 style={{ fontSize: "18px", fontWeight: "700" }}>Recent Activity</h3>
@@ -216,13 +216,13 @@ export const Home = () => {
               </Button>
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "16px" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "var(--space-md)" }}>
               {recentMeetings.map((item, index) => (
                 <Card
                   key={item._id || index}
                   variant="surface"
                   style={{
-                    padding: "16px 20px",
+                    padding: "var(--space-md) 20px",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "space-between",
@@ -236,7 +236,7 @@ export const Home = () => {
                     <span style={{ fontSize: "16px", fontWeight: "700", fontFamily: "var(--font-mono)", color: "var(--cyan-accent)" }}>
                       {item.meetingCode}
                     </span>
-                    <p style={{ fontSize: "12px", color: "var(--text-muted)", marginTop: "4px" }}>
+                    <p style={{ fontSize: "12px", color: "var(--text-muted)", marginTop: "var(--space-xs)" }}>
                       {item.date ? new Date(item.date).toLocaleDateString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "Recent"}
                     </p>
                   </div>

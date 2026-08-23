@@ -10,7 +10,7 @@ export const Card = ({
 }) => {
   const baseStyles = {
     borderRadius: "var(--radius-lg)",
-    padding: "24px",
+    padding: "var(--space-lg)",
     transition: "all var(--dur-normal) var(--ease-spring)",
     border: "var(--border-subtle)",
   };
