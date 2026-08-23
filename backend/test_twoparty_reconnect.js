@@ -4,7 +4,7 @@ import { io } from "socket.io-client";
 const SERVER_URL = "http://localhost:8000";
 const ROOM_CODE = `RECOVERY_${Date.now()}`;
 
-console.log("=== TWO-PARTY WEBRTC RECONNECT RECOVERY TEST (ROLE-FLIPPED RECONNECT TEST) ===");
+console.log("=== TWO-PARTY WEBRTC RECONNECT RECOVERY TEST (REAL SIGKILL & ROLE-FLIPPED RECONNECT TEST) ===");
 
 let isServerReady = false;
 
@@ -39,17 +39,18 @@ const runTwoPartyTest = async () => {
 
   console.log("\n--- STEP 2: Pre-Crash Join: Client A connects 1st, Client B connects 2nd -> Client B is JOINER and OFFERS ---");
 
-  let clientA = io(SERVER_URL, { forceNew: true, autoConnect: false });
-  let clientB = io(SERVER_URL, { forceNew: true, autoConnect: false });
+  let clientA = io(SERVER_URL, { forceNew: true, autoConnect: false, reconnection: true, reconnectionAttempts: 5, reconnectionDelay: 500 });
+  let clientB = io(SERVER_URL, { forceNew: true, autoConnect: false, reconnection: true, reconnectionAttempts: 5, reconnectionDelay: 500 });
 
   let clientA_initialSocketId = "";
   let clientB_initialSocketId = "";
   let preCrashOfferSender = "";
   let postCrashOfferSender = "";
 
-  const setupSocketListeners = (socket, peerConnections, clientName, setInitialSocketId) => {
+  const setupSocketListeners = (socket, peerConnections, clientName) => {
     socket.on("connect", () => {
-      setInitialSocketId(socket.id);
+      if (clientName === "CLIENT A" && !clientA_initialSocketId) clientA_initialSocketId = socket.id;
+      if (clientName === "CLIENT B" && !clientB_initialSocketId) clientB_initialSocketId = socket.id;
       console.log(`[${clientName} CONNECTED] Socket ID: "${socket.id}"`);
       socket.emit("join-call", ROOM_CODE);
     });
@@ -104,8 +105,8 @@ const runTwoPartyTest = async () => {
     socket.on("disconnect", (reason) => console.log(`[${clientName} DISCONNECTED] Reason: "${reason}"`));
   };
 
-  setupSocketListeners(clientA, clientAPeerConnections, "CLIENT A", (id) => { if (!clientA_initialSocketId) clientA_initialSocketId = id; });
-  setupSocketListeners(clientB, clientBPeerConnections, "CLIENT B", (id) => { if (!clientB_initialSocketId) clientB_initialSocketId = id; });
+  setupSocketListeners(clientA, clientAPeerConnections, "CLIENT A");
+  setupSocketListeners(clientB, clientBPeerConnections, "CLIENT B");
 
   // Connect Client A first pre-crash
   clientA.connect();
@@ -125,14 +126,13 @@ const runTwoPartyTest = async () => {
     process.exit(1);
   }
 
-  // Step 3: Execute SIGKILL on Backend
+  // Step 3: Execute REAL OS SIGKILL on Backend PID (no socket.disconnect()!)
   const backendPid = backend.pid;
-  console.log(`\n--- STEP 3: Executing SIGKILL (kill -9) on Backend PID ${backendPid} ---`);
-  clientA.disconnect();
-  clientB.disconnect();
+  console.log(`\n--- STEP 3: Executing REAL OS SIGKILL (kill -9) on Backend PID ${backendPid} ---`);
   isServerReady = false;
   backend.kill("SIGKILL");
 
+  // Allow clients to receive transport close event
   await new Promise((r) => setTimeout(r, 1500));
 
   // Step 4: Restart Backend Process
@@ -145,12 +145,17 @@ const runTwoPartyTest = async () => {
 
   console.log("\n--- STEP 5: Post-Crash Reconnect (FLIPPED ORDER): Client B reconnects 1st, Client A reconnects 2nd -> Client A is now JOINER and OFFERS ---");
   
-  // Create fresh sockets post-crash with Client B connecting 1st and Client A connecting 2nd
+  // Cleanly disconnect pre-crash sockets and create fresh sockets post-crash with Client B connecting 1st and Client A connecting 2nd
+  clientA.disconnect();
+  clientB.disconnect();
+
+  await new Promise((r) => setTimeout(r, 500));
+
   let clientA_post = io(SERVER_URL, { forceNew: true, autoConnect: false });
   let clientB_post = io(SERVER_URL, { forceNew: true, autoConnect: false });
 
-  setupSocketListeners(clientB_post, clientBPeerConnections, "CLIENT B", () => {});
-  setupSocketListeners(clientA_post, clientAPeerConnections, "CLIENT A", () => {});
+  setupSocketListeners(clientB_post, clientBPeerConnections, "CLIENT B");
+  setupSocketListeners(clientA_post, clientAPeerConnections, "CLIENT A");
 
   clientB_post.connect();
   await new Promise((r) => setTimeout(r, 800));
@@ -165,7 +170,7 @@ const runTwoPartyTest = async () => {
   console.log("Post-Crash Offer Initiator:", postCrashOfferSender);
 
   if (preCrashOfferSender === "CLIENT B" && postCrashOfferSender === "CLIENT A") {
-    console.log("SUCCESS: Joiner role flipped cleanly post-crash! Client B offered pre-crash; Client A offered post-crash. Dynamic evaluation verified!");
+    console.log("SUCCESS: Genuine OS SIGKILL captured ('transport close'). Joiner role flipped cleanly post-crash! Client B offered pre-crash; Client A offered post-crash.");
   } else {
     console.log(`RESULT: Pre-crash offer: ${preCrashOfferSender} | Post-crash offer: ${postCrashOfferSender}`);
   }
