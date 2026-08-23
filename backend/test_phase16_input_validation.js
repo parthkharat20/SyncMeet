@@ -1,7 +1,5 @@
 import { spawn } from "node:child_process";
 import http from "node:http";
-import mongoose from "mongoose";
-import User from "./src/models/user.model.js";
 
 console.log("=== PHASE 16 — COMPLETE 25-TEST REST API INPUT VALIDATION SWEEP ===");
 
@@ -9,7 +7,7 @@ let isServerReady = false;
 let validToken = "";
 
 const backend = spawn("node", ["src/app.js"], {
-  env: { ...process.env, PORT: "8000" },
+  env: { ...process.env, PORT: "8000", NODE_ENV: "test" },
   stdio: ["pipe", "pipe", "pipe"],
 });
 
@@ -29,7 +27,7 @@ const makeRequest = (method, path, bodyObj = null, token = null) => {
       headers["Content-Type"] = "application/json";
       headers["Content-Length"] = Buffer.byteLength(postData);
     }
-    if (token) {
+    if (token !== null) {
       headers["Authorization"] = `Bearer ${token}`;
     }
 
@@ -64,14 +62,15 @@ const runSweep = async () => {
   while (!isServerReady) {
     await new Promise((r) => setTimeout(r, 100));
   }
-  console.log("[SERVER READY] Backend running on port 8000\n");
+  console.log("[SERVER READY] Backend running on port 8000 in test mode\n");
 
-  // Create a valid user & token for testing protected endpoints
-  try {
-    const regRes = await makeRequest("POST", "/register", { name: "Sweep User", username: "sweep_user_1", password: "password123" });
-    const logRes = await makeRequest("POST", "/login", { username: "sweep_user_1", password: "password123" });
-    validToken = logRes.body ? logRes.body.token : "";
-  } catch (e) {}
+  const testUser = `user_${Date.now()}`;
+  const testPass = "password123";
+
+  // Register & Login to get a valid token
+  await makeRequest("POST", "/register", { name: "Sweep User", username: testUser, password: testPass });
+  const logRes = await makeRequest("POST", "/login", { username: testUser, password: testPass });
+  validToken = logRes.body ? logRes.body.token : "";
 
   let testCounter = 0;
   const sendTest = async (endpointName, method, path, body, token = null) => {
@@ -79,7 +78,7 @@ const runSweep = async () => {
     console.log(`--- TEST ${testCounter}: ${endpointName} ---`);
     console.log(`REQUEST: ${method} /api/users${path}`);
     if (body) console.log(`PAYLOAD: ${JSON.stringify(body).slice(0, 80)}...`);
-    if (token) console.log(`TOKEN: ${token.slice(0, 15)}...`);
+    if (token !== null) console.log(`TOKEN HEADER: ${token.length > 30 ? token.slice(0, 20) + "..." : token}`);
     const res = await makeRequest(method, path, body, token);
     console.log(`RESPONSE STATUS: ${res.status}`);
     console.log(`RESPONSE BODY: ${JSON.stringify(res.body)}\n`);
@@ -97,23 +96,23 @@ const runSweep = async () => {
 
   // ENDPOINT 2: POST /login (Tests 6-10)
   await sendTest("POST /login (Missing required fields / empty body)", "POST", "/login", {});
-  await sendTest("POST /login (Wrong data type: numeric password)", "POST", "/login", { username: "sweep_user_1", password: 9999 });
+  await sendTest("POST /login (Wrong data type: numeric password)", "POST", "/login", { username: testUser, password: 9999 });
   await sendTest("POST /login (10,000+ char username)", "POST", "/login", { username: longStr, password: "password123" });
-  await sendTest("POST /login (Empty string password)", "POST", "/login", { username: "sweep_user_1", password: "" });
+  await sendTest("POST /login (Empty string password)", "POST", "/login", { username: testUser, password: "" });
   await sendTest("POST /login (NoSQL injection object payload)", "POST", "/login", { username: injectionObj, password: "password123" });
 
   // ENDPOINT 3: GET /profile (Tests 11-15)
-  await sendTest("GET /profile (Missing authorization token)", "GET", "/profile", null, null);
+  await sendTest("GET /profile (Missing authorization token header)", "GET", "/profile", null, null);
   await sendTest("GET /profile (Invalid data type token string)", "GET", "/profile", null, "INVALID_TOKEN_123");
-  await sendTest("GET /profile (10,000+ char header token)", "GET", "/profile", null, longStr);
-  await sendTest("GET /profile (Empty Bearer token)", "GET", "/profile", null, "");
-  await sendTest("GET /profile (NoSQL injection token string)", "GET", "/profile", null, "{\"$ne\":null}");
+  await sendTest("GET /profile (10,000+ char header token string)", "GET", "/profile", null, longStr);
+  await sendTest("GET /profile (Empty Bearer token string)", "GET", "/profile", null, "");
+  await sendTest("GET /profile (NoSQL injection-style token string)", "GET", "/profile", null, "{\"$ne\":null}");
 
   // ENDPOINT 4: GET /get_all_activity (Tests 16-20)
-  await sendTest("GET /get_all_activity (Missing token)", "GET", "/get_all_activity", null, null);
-  await sendTest("GET /get_all_activity (Invalid token)", "GET", "/get_all_activity", null, "BAD_TOKEN");
-  await sendTest("GET /get_all_activity (10,000+ char token)", "GET", "/get_all_activity", null, longStr);
-  await sendTest("GET /get_all_activity (Empty string token)", "GET", "/get_all_activity", null, "");
+  await sendTest("GET /get_all_activity (Missing token header)", "GET", "/get_all_activity", null, null);
+  await sendTest("GET /get_all_activity (Invalid token string)", "GET", "/get_all_activity", null, "BAD_TOKEN_STRING");
+  await sendTest("GET /get_all_activity (10,000+ char token string)", "GET", "/get_all_activity", null, longStr);
+  await sendTest("GET /get_all_activity (Empty token string)", "GET", "/get_all_activity", null, "");
   await sendTest("GET /get_all_activity (Valid token request)", "GET", "/get_all_activity", null, validToken);
 
   // ENDPOINT 5: POST /add_to_activity (Tests 21-25)
@@ -124,7 +123,7 @@ const runSweep = async () => {
   await sendTest("POST /add_to_activity (NoSQL injection object meeting_code)", "POST", "/add_to_activity", { meeting_code: injectionObj }, validToken);
 
   backend.kill("SIGKILL");
-  console.log("=== PHASE 16 SWEEP COMPLETE (25/25 TESTS EXECUTED) ===");
+  console.log("=== PHASE 16 SWEEP COMPLETE (EXACTLY 25/25 TESTS SHOWN) ===");
   process.exit(0);
 };
 

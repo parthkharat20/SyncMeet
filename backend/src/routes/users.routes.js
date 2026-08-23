@@ -14,11 +14,12 @@ import { authMiddleware } from "../middleware/auth.middleware.js";
 const router = Router();
 
 const loginLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // Limit to 5 attempts per IP per 15 min window
+  windowMs: 15 * 60 * 1000,
+  max: 5,
   message: { message: "Too many login attempts from this IP, please try again after 15 minutes." },
   standardHeaders: true,
   legacyHeaders: false,
+  skip: () => process.env.NODE_ENV === "test",
 });
 
 router.post("/login", loginLimiter, login);

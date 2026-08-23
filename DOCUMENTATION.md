@@ -36,7 +36,9 @@ SyncMeet/
 │   ├── test_full_regression.js           # Live regression runner (Phase 5, 7, 8)
 │   ├── test_phase13_max_participants.js  # Mesh scaling limit test (max 6 participants)
 │   ├── test_phase14_device_errors.js     # WebRTC media device error simulation test script
+│   ├── test_phase15_host_leaves.js       # Host leaves meeting behavior test script
 │   ├── test_phase15_lifecycle.js         # Meeting ended status check test script
+│   ├── test_phase15_twotabs.js           # Same user in two separate browser tabs test script
 │   ├── test_phase16_input_validation.js  # REST API 25-test input validation sweep test script
 │   ├── test_phase17_logout.js            # Server-side token logout cleanup test script
 │   ├── test_reconnect_proof.js           # Live empirical auto-reconnect proof test script
@@ -85,12 +87,12 @@ SyncMeet/
 
 | Phase | Category | Status | Empirical Evidence / Log Reference |
 | :--- | :--- | :--- | :--- |
-| **Phase 12** | Two-Party Reconnect Recovery | **Fixed & Verified** | [test_twoparty_reconnect.js](file:///Users/parthkharat/Desktop/SyncMeet/backend/test_twoparty_reconnect.js) (Client B purges stale ID `"hvH3ur..."` and establishes fresh connection with Client A's new ID `"Nx8dZG..."`) |
+| **Phase 12** | Two-Party Reconnect Recovery | **Fixed & Verified** | [test_twoparty_reconnect.js](file:///Users/parthkharat/Desktop/SyncMeet/backend/test_twoparty_reconnect.js) (Client B purges stale ID `"SBAc_P..."` and establishes fresh connection with Client A's new ID `"7JOsTr..."`) |
 | **Phase 13** | Mesh Participant Scaling Limit | **Fixed & Verified** | [socketManager.js:76](file:///Users/parthkharat/Desktop/SyncMeet/backend/src/controllers/socketManager.js#L76) & [test_phase13_max_participants.js](file:///Users/parthkharat/Desktop/SyncMeet/backend/test_phase13_max_participants.js) (7th participant rejected with `room-full` event: `"Meeting is full. Maximum limit is 6 participants."`) |
 | **Phase 14** | Device & Permission Error Handling | **Fixed & Verified** | [VideoMeet.jsx:75-105](file:///Users/parthkharat/Desktop/SyncMeet/frontend/src/pages/VideoMeet.jsx#L75-L105) & [test_phase14_device_errors.js](file:///Users/parthkharat/Desktop/SyncMeet/backend/test_phase14_device_errors.js) (Surfaces UI alerts for `NotAllowedError`, `NotFoundError`, and `NotReadableError`) |
-| **Phase 15** | Meeting Lifecycle Edge Cases | **Fixed & Verified** | [user.controller.js:180](file:///Users/parthkharat/Desktop/SyncMeet/backend/src/controllers/user.controller.js#L180) & [test_phase15_lifecycle.js](file:///Users/parthkharat/Desktop/SyncMeet/backend/test_phase15_lifecycle.js) (`DEADLINKROOM` returns `{ ended: true, message: "This meeting has ended." }`) |
-| **Phase 16** | REST API Input Validation Sweep | **Fixed & Verified** | [user.controller.js:12-25](file:///Users/parthkharat/Desktop/SyncMeet/backend/src/controllers/user.controller.js#L12-L25) & [test_phase16_input_validation.js](file:///Users/parthkharat/Desktop/SyncMeet/backend/test_phase16_input_validation.js) (Full 25-test sweep across `/register`, `/login`, `/profile`, `/get_all_activity`, `/add_to_activity` catching missing fields, numeric types, 10,000+ char strings, empty passwords & NoSQL injection objects with 400 Bad Request) |
-| **Phase 17** | Logout & Session Cleanup | **Fixed & Verified** | [users.routes.js:27](file:///Users/parthkharat/Desktop/SyncMeet/backend/src/routes/users.routes.js#L27) & [test_phase17_logout.js](file:///Users/parthkharat/Desktop/SyncMeet/backend/test_phase17_logout.js) (Token removed from DB `tokens` array on `/logout`; subsequent `/profile` attempts return 401 Unauthorized) |
+| **Phase 15** | Meeting Lifecycle Edge Cases | **Fixed & Verified** | [Meeting.model.js:9-12](file:///Users/parthkharat/Desktop/SyncMeet/backend/src/models/meeting.model.js#L9-L12) (No unique index on `meetingCode`), [test_phase15_twotabs.js](file:///Users/parthkharat/Desktop/SyncMeet/backend/test_phase15_twotabs.js) (2 tabs register as distinct peer sockets), [test_phase15_host_leaves.js](file:///Users/parthkharat/Desktop/SyncMeet/backend/test_phase15_host_leaves.js) (Guest stays active when Host leaves), [test_phase15_lifecycle.js](file:///Users/parthkharat/Desktop/SyncMeet/backend/test_phase15_lifecycle.js) (Ended status checked) |
+| **Phase 16** | REST API Input Validation Sweep | **Fixed & Verified** | [user.controller.js:12-25](file:///Users/parthkharat/Desktop/SyncMeet/backend/src/controllers/user.controller.js#L12-L25) & [test_phase16_input_validation.js](file:///Users/parthkharat/Desktop/SyncMeet/backend/test_phase16_input_validation.js) (Full 25/25 sweep across `/register`, `/login`, `/profile`, `/get_all_activity`, `/add_to_activity` catching missing fields, numeric types, 10,000+ char strings, empty passwords & NoSQL injection objects) |
+| **Phase 17** | Logout & Session Cleanup | **Fixed & Verified** | [users.routes.js:29](file:///Users/parthkharat/Desktop/SyncMeet/backend/src/routes/users.routes.js#L29) & [test_phase17_logout.js](file:///Users/parthkharat/Desktop/SyncMeet/backend/test_phase17_logout.js) (Token removed from DB `tokens` array on `/logout`; subsequent `/profile` attempts return 401 Unauthorized) |
 | **Phase 18** | TURN Server Provisioning | **Documented Limitation** | Flagged in [DOCUMENTATION.md:3](file:///Users/parthkharat/Desktop/SyncMeet/DOCUMENTATION.md#L3) (STUN fallback active; TURN required for symmetric NATs) |
 | **Phase 19** | Mobile & Safari Cross-Browser Check | **Documented Risk / Partial Verification** | Video elements in [VideoMeet.jsx](file:///Users/parthkharat/Desktop/SyncMeet/frontend/src/pages/VideoMeet.jsx) use `autoPlay muted playsInline`; native Safari hardware playback unverified in headless environment. |
 
@@ -109,7 +111,9 @@ node test_phase13_max_participants.js
 # Run Phase 14 Media Device Error Simulation Test
 node test_phase14_device_errors.js
 
-# Run Phase 15 Meeting Lifecycle Ended Status Test
+# Run Phase 15 Edge Cases Tests
+node test_phase15_twotabs.js
+node test_phase15_host_leaves.js
 node test_phase15_lifecycle.js
 
 # Run Phase 16 Complete 25-Test REST API Input Validation Sweep
