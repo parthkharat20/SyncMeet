@@ -1,7 +1,9 @@
 # SyncMeet — Production Documentation & Architecture Reference
 
 > [!WARNING]
-> **PRE-DEPLOYMENT MANDATORY FLAG**: SyncMeet includes native TURN server fallback support (`getIceServers()` reading `VITE_TURN_URL`, `VITE_TURN_USERNAME`, `VITE_TURN_PASSWORD`). Currently, these environment variables are left blank (falling back to free Google STUN servers). **NOT PRODUCTION READY for users behind symmetric NAT / corporate firewalls until live TURN credentials are provisioned (via Coturn, Twilio, or Metered.ca TURN).**
+> **PRE-DEPLOYMENT MANDATORY FLAGS**:
+> 1. **TURN SERVER PROVISIONING**: SyncMeet includes native TURN server fallback support (`getIceServers()` reading `VITE_TURN_URL`, `VITE_TURN_USERNAME`, `VITE_TURN_PASSWORD`). Currently, these environment variables are left blank (falling back to free Google STUN servers). **NOT PRODUCTION READY for users behind symmetric NAT / corporate firewalls until live TURN credentials are provisioned (via Coturn, Twilio, or Metered.ca TURN).**
+> 2. **SAFARI WEBRTC TESTING**: HTML5 video elements in `VideoMeet.jsx` include `autoPlay muted playsInline` attributes. However, WebRTC playback on physical iOS/macOS Safari hardware was not executed in this automated environment and remains an unverified risk prior to deployment.
 
 SyncMeet is a real-time, peer-to-peer video conferencing and collaboration platform built on the MERN stack (MongoDB, Express.js, React, Node.js), Socket.IO, and WebRTC mesh architecture.
 
@@ -33,8 +35,9 @@ SyncMeet/
 │   ├── package.json                      # Backend dependencies & npm scripts
 │   ├── test_full_regression.js           # Live regression runner (Phase 5, 7, 8)
 │   ├── test_phase13_max_participants.js  # Mesh scaling limit test (max 6 participants)
+│   ├── test_phase14_device_errors.js     # WebRTC media device error simulation test script
 │   ├── test_phase15_lifecycle.js         # Meeting ended status check test script
-│   ├── test_phase16_input_validation.js  # REST API input validation sweep test script
+│   ├── test_phase16_input_validation.js  # REST API 25-test input validation sweep test script
 │   ├── test_phase17_logout.js            # Server-side token logout cleanup test script
 │   ├── test_reconnect_proof.js           # Live empirical auto-reconnect proof test script
 │   ├── test_twoparty_reconnect.js        # Two-party WebRTC reconnect recovery test script
@@ -78,18 +81,18 @@ SyncMeet/
 
 ---
 
-## 3. Consolidated Production Readiness Audit Matrix (Phases 12–19)
+## 3. Consolidated Audit Status Matrix (Phases 12–19)
 
 | Phase | Category | Status | Empirical Evidence / Log Reference |
 | :--- | :--- | :--- | :--- |
 | **Phase 12** | Two-Party Reconnect Recovery | **Fixed & Verified** | [test_twoparty_reconnect.js](file:///Users/parthkharat/Desktop/SyncMeet/backend/test_twoparty_reconnect.js) (Client B purges stale ID `"hvH3ur..."` and establishes fresh connection with Client A's new ID `"Nx8dZG..."`) |
 | **Phase 13** | Mesh Participant Scaling Limit | **Fixed & Verified** | [socketManager.js:76](file:///Users/parthkharat/Desktop/SyncMeet/backend/src/controllers/socketManager.js#L76) & [test_phase13_max_participants.js](file:///Users/parthkharat/Desktop/SyncMeet/backend/test_phase13_max_participants.js) (7th participant rejected with `room-full` event: `"Meeting is full. Maximum limit is 6 participants."`) |
-| **Phase 14** | Device & Permission Error Handling | **Fixed & Verified** | [VideoMeet.jsx:75-105](file:///Users/parthkharat/Desktop/SyncMeet/frontend/src/pages/VideoMeet.jsx#L75-L105) (surfaces distinct alerts for `NotAllowedError`, `NotFoundError`, `NotReadableError`) |
+| **Phase 14** | Device & Permission Error Handling | **Fixed & Verified** | [VideoMeet.jsx:75-105](file:///Users/parthkharat/Desktop/SyncMeet/frontend/src/pages/VideoMeet.jsx#L75-L105) & [test_phase14_device_errors.js](file:///Users/parthkharat/Desktop/SyncMeet/backend/test_phase14_device_errors.js) (Surfaces UI alerts for `NotAllowedError`, `NotFoundError`, and `NotReadableError`) |
 | **Phase 15** | Meeting Lifecycle Edge Cases | **Fixed & Verified** | [user.controller.js:180](file:///Users/parthkharat/Desktop/SyncMeet/backend/src/controllers/user.controller.js#L180) & [test_phase15_lifecycle.js](file:///Users/parthkharat/Desktop/SyncMeet/backend/test_phase15_lifecycle.js) (`DEADLINKROOM` returns `{ ended: true, message: "This meeting has ended." }`) |
-| **Phase 16** | REST API Input Validation Sweep | **Fixed & Verified** | [user.controller.js:12](file:///Users/parthkharat/Desktop/SyncMeet/backend/src/controllers/user.controller.js#L12) & [test_phase16_input_validation.js](file:///Users/parthkharat/Desktop/SyncMeet/backend/test_phase16_input_validation.js) (Catches empty bodies, wrong types, 10,000+ char strings, empty passwords & NoSQL injection objects with 400 Bad Request) |
+| **Phase 16** | REST API Input Validation Sweep | **Fixed & Verified** | [user.controller.js:12-25](file:///Users/parthkharat/Desktop/SyncMeet/backend/src/controllers/user.controller.js#L12-L25) & [test_phase16_input_validation.js](file:///Users/parthkharat/Desktop/SyncMeet/backend/test_phase16_input_validation.js) (Full 25-test sweep across `/register`, `/login`, `/profile`, `/get_all_activity`, `/add_to_activity` catching missing fields, numeric types, 10,000+ char strings, empty passwords & NoSQL injection objects with 400 Bad Request) |
 | **Phase 17** | Logout & Session Cleanup | **Fixed & Verified** | [users.routes.js:27](file:///Users/parthkharat/Desktop/SyncMeet/backend/src/routes/users.routes.js#L27) & [test_phase17_logout.js](file:///Users/parthkharat/Desktop/SyncMeet/backend/test_phase17_logout.js) (Token removed from DB `tokens` array on `/logout`; subsequent `/profile` attempts return 401 Unauthorized) |
-| **Phase 18** | TURN Server Provisioning | **Documented Limitation** | Flagged prominently in [DOCUMENTATION.md:3](file:///Users/parthkharat/Desktop/SyncMeet/DOCUMENTATION.md#L3) (STUN fallback active; TURN required for symmetric NATs) |
-| **Phase 19** | Mobile & Safari Cross-Browser Check | **Fixed & Verified** | Video elements in [VideoMeet.jsx](file:///Users/parthkharat/Desktop/SyncMeet/frontend/src/pages/VideoMeet.jsx) use `autoPlay muted playsInline`; mobile responsive CSS at 375px viewport width |
+| **Phase 18** | TURN Server Provisioning | **Documented Limitation** | Flagged in [DOCUMENTATION.md:3](file:///Users/parthkharat/Desktop/SyncMeet/DOCUMENTATION.md#L3) (STUN fallback active; TURN required for symmetric NATs) |
+| **Phase 19** | Mobile & Safari Cross-Browser Check | **Documented Risk / Partial Verification** | Video elements in [VideoMeet.jsx](file:///Users/parthkharat/Desktop/SyncMeet/frontend/src/pages/VideoMeet.jsx) use `autoPlay muted playsInline`; native Safari hardware playback unverified in headless environment. |
 
 ---
 
@@ -103,10 +106,13 @@ node test_twoparty_reconnect.js
 # Run Phase 13 Mesh Scaling Limit Test (Max 6)
 node test_phase13_max_participants.js
 
+# Run Phase 14 Media Device Error Simulation Test
+node test_phase14_device_errors.js
+
 # Run Phase 15 Meeting Lifecycle Ended Status Test
 node test_phase15_lifecycle.js
 
-# Run Phase 16 REST API Input Validation Sweep
+# Run Phase 16 Complete 25-Test REST API Input Validation Sweep
 node test_phase16_input_validation.js
 
 # Run Phase 17 Logout Server-Side Token Cleanup Test

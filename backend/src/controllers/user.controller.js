@@ -7,12 +7,21 @@ const MAX_CONCURRENT_SESSIONS = 10;
 const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days TTL
 const MAX_FIELD_LENGTH = 10000;
 
+const isNonEmptyString = (val) => typeof val === "string" && val.trim().length > 0;
+
 const login = async (req, res) => {
   const { username, password } = req.body || {};
 
-  if (!username || typeof username !== "string" || !username.trim() ||
-      !password || typeof password !== "string") {
+  if (username === undefined || password === undefined || username === null || password === null) {
     return res.status(400).json({ message: "Username and password are required" });
+  }
+
+  if (typeof username !== "string" || typeof password !== "string") {
+    return res.status(400).json({ message: "Invalid data types: username and password must be strings" });
+  }
+
+  if (!username.trim() || !password.trim()) {
+    return res.status(400).json({ message: "Username and password cannot be empty" });
   }
 
   if (username.length > MAX_FIELD_LENGTH || password.length > MAX_FIELD_LENGTH) {
@@ -41,12 +50,9 @@ const login = async (req, res) => {
       user.tokens = [];
     }
 
-    // Filter out already expired tokens first
     user.tokens = user.tokens.filter((t) => t.expiresAt && new Date(t.expiresAt) > new Date());
-
     user.tokens.push({ token, createdAt: new Date(), expiresAt });
 
-    // FIFO Eviction Policy: Remove oldest session token if session limit (10) is exceeded
     if (user.tokens.length > MAX_CONCURRENT_SESSIONS) {
       const removedSession = user.tokens.shift();
       console.log(`[FIFO EVICTION] Evicted oldest session token (${removedSession.token.slice(0, 6)}...) for user ${user.username}`);
@@ -72,10 +78,17 @@ const login = async (req, res) => {
 const register = async (req, res) => {
   const { name, username, password } = req.body || {};
 
-  if (!name || typeof name !== "string" || !name.trim() ||
-      !username || typeof username !== "string" || !username.trim() ||
-      !password || typeof password !== "string") {
+  if (name === undefined || username === undefined || password === undefined ||
+      name === null || username === null || password === null) {
     return res.status(400).json({ message: "All fields are required" });
+  }
+
+  if (typeof name !== "string" || typeof username !== "string" || typeof password !== "string") {
+    return res.status(400).json({ message: "Invalid data types: name, username, and password must be strings" });
+  }
+
+  if (!name.trim() || !username.trim() || !password.trim()) {
+    return res.status(400).json({ message: "All fields cannot be empty" });
   }
 
   if (name.length > MAX_FIELD_LENGTH || username.length > MAX_FIELD_LENGTH || password.length > MAX_FIELD_LENGTH) {
@@ -146,8 +159,16 @@ const getUserHistory = async (req, res) => {
 const addToHistory = async (req, res) => {
   const { meeting_code } = req.body || {};
 
-  if (!meeting_code || typeof meeting_code !== "string" || !meeting_code.trim()) {
+  if (meeting_code === undefined || meeting_code === null) {
     return res.status(400).json({ message: "meeting_code is required" });
+  }
+
+  if (typeof meeting_code !== "string") {
+    return res.status(400).json({ message: "Invalid data type: meeting_code must be a string" });
+  }
+
+  if (!meeting_code.trim()) {
+    return res.status(400).json({ message: "meeting_code cannot be empty" });
   }
 
   if (meeting_code.length > MAX_FIELD_LENGTH) {
