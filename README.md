@@ -4,7 +4,7 @@
 
 ### Modern P2P WebRTC Video Conferencing & Real-Time Communication Platform
 
-[![Live Demo](https://img.shields.io/badge/Live_Demo-syncmeet.up.railway.app-5865F2?style=for-the-badge&logo=railway&logoColor=white)](https://syncmeet.up.railway.app)
+[![Live Demo](https://img.shields.io/badge/Live_Demo-sync--meet--eight.vercel.app-5865F2?style=for-the-badge&logo=vercel&logoColor=white)](https://sync-meet-eight.vercel.app)
 [![React](https://img.shields.io/badge/React_18-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://reactjs.org/)
 [![Vite](https://img.shields.io/badge/Vite_8-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
 [![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
@@ -17,7 +17,7 @@
   <b>High-quality, low-latency video meetings directly in your browser — zero software downloads or complicated configurations required.</b>
 </p>
 
-[Explore Live Demo](https://syncmeet.up.railway.app) • [Report Bug](https://github.com/parthkharat20/SyncMeet/issues) • [Request Feature](https://github.com/parthkharat20/SyncMeet/issues)
+[Explore Live Demo](https://sync-meet-eight.vercel.app) • [Report Bug](https://github.com/parthkharat20/SyncMeet/issues) • [Request Feature](https://github.com/parthkharat20/SyncMeet/issues)
 
 </div>
 
