@@ -13,7 +13,7 @@ dotenv.config();
 const app = express();
 const server = createServer(app);
 
-// Enable trust proxy so Express rate limiter reads real client IP behind Nginx reverse proxy
+// Enable trust proxy so Express rate limiter reads real client IP behind Nginx / Render reverse proxy
 app.set("trust proxy", 1);
 
 connectToSocket(server);
@@ -29,7 +29,7 @@ app.use(helmet({
 app.use(cors({
   origin: (origin, callback) => {
     if (!origin) return callback(null, true);
-    if (origin === clientOrigin || origin.startsWith("http://localhost:")) {
+    if (origin === clientOrigin || origin.startsWith("http://localhost:") || origin.endsWith(".vercel.app")) {
       return callback(null, true);
     }
     return callback(null, true);
@@ -39,6 +39,11 @@ app.use(cors({
 
 app.use(express.json({ limit: "40kb" }));
 app.use(express.urlencoded({ limit: "40kb", extended: true }));
+
+// Health Check endpoint for cloud deployment platforms (Render, Railway, Fly, AWS)
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "healthy", timestamp: new Date().toISOString() });
+});
 
 app.use("/api/users", userRoutes);
 
@@ -77,8 +82,29 @@ const start = async () => {
   }
 
   server.listen(PORT, () => {
-    console.log(`SyncMeet Server running on port 8000`);
+    console.log(`SyncMeet Server running on port ${PORT}`);
   });
 };
+
+// Graceful Shutdown
+const handleGracefulShutdown = async (signal) => {
+  console.log(`[SHUTDOWN] Received ${signal}. Closing server and database connections...`);
+  try {
+    await reconcileStaleActiveMeetings();
+    if (mongoose.connection.readyState === 1) {
+      await mongoose.connection.close();
+    }
+    server.close(() => {
+      console.log("[SHUTDOWN] Server closed cleanly.");
+      process.exit(0);
+    });
+  } catch (err) {
+    console.error("[SHUTDOWN ERROR]", err);
+    process.exit(1);
+  }
+};
+
+process.on("SIGTERM", () => handleGracefulShutdown("SIGTERM"));
+process.on("SIGINT", () => handleGracefulShutdown("SIGINT"));
 
 start();
