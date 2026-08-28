@@ -1,16 +1,18 @@
-# SyncMeet — Clean Google Meet-Grade Design System & Style Guide
+# SyncMeet — Discord-Inspired Communication Platform Design System & Style Guide
 
-SyncMeet adopts a crisp, professional, white-based visual identity inspired by Google Meet, focused on typography clarity, spatial harmony, and smooth tactile micro-interactions.
+SyncMeet adopts a modern, dark, communication-native visual identity inspired by **Discord** and specified in `frontend/DESIGN.md`, prioritizing typography clarity, immersive atmosphere, spacious rounded components, and tactile micro-interactions.
 
 ---
 
-## 1. Aesthetic Archetype: Google Meet Clean Light
+## 1. Aesthetic Archetype: Discord Communication Dark
 
-- **Primary Canvas**: Clean Crisp White (`#FFFFFF`) with subtle off-white elevation surfaces (`#F8FAFC`, `#F1F5F9`).
-- **Brand Identity Colors**: Google Meet Blue (`#1A73E8`) & Teal (`#0D9488`).
-- **Borders & Dividers**: Crisp slate hairlines (`#E2E8F0`).
-- **Typography Scale**: High-contrast slate text (`#0F172A` Primary, `#475569` Secondary).
-- **Video Room Dark Mode**: Dedicated call canvas (`#111827` / `#0B0F19`) for participant grid and floating slate controls (`#1E293B`).
+- **Primary Canvas**: Deep Indigo canvas (`#0A0D3A` / `#070928`) with an atmospheric Blurple-to-Magenta ambient gradient mesh.
+- **Brand Identity Accent**: **Blurple** (`#5865F2`) for primary actions, marquee bands, and active brand markings.
+- **High-Intent Accent**: **Electric Green** (`#35ED7E`) with dark contrast text for highest-intent CTAs (Get Started, Join Meeting) and active online indicators.
+- **Vibrant Accent**: **Magenta** (`#EC48BD`) for badges, highlight accents, and gradient panels.
+- **Surfaces & Cards**: Raised Indigo (`#1E2353`), Surface Card (`#141738`), Surface Onyx (`#23272A`), Glassmorphism (`rgba(14, 18, 52, 0.75)`).
+- **Hairline Borders**: Soft semi-transparent borders (`rgba(255, 255, 255, 0.08)`).
+- **Typography Scale**: High-contrast white text (`#FFFFFF`), secondary text (`#B5BAC1`), muted text (`#80848E`). Display headings powered by `Space Grotesk` & `Plus Jakarta Sans`, code rooms by `JetBrains Mono`.
 
 ---
 
@@ -19,34 +21,46 @@ SyncMeet adopts a crisp, professional, white-based visual identity inspired by G
 ```css
 :root {
   /* Surfaces */
-  --bg-main: #FFFFFF;
-  --surface-1: #F8FAFC;
-  --surface-2: #F1F5F9;
-  --surface-3: #E2E8F0;
-  --surface-dark: #1E293B;
+  --canvas: #0A0D3A;
+  --canvas-dark: #070928;
+  --surface-indigo: #1E2353;
+  --surface-card: #141738;
+  --surface-onyx: #23272A;
+  --surface-glass: rgba(14, 18, 52, 0.75);
+
+  /* Brand Accents */
+  --primary-blurple: #5865F2;
+  --blurple-hover: #4752C4;
+  --accent-green: #35ED7E;
+  --green-hover: #2FD36F;
+  --accent-magenta: #EC48BD;
+  --accent-cyan: #00B0F4;
 
   /* Text & Foreground */
-  --text-primary: #0F172A;
-  --text-secondary: #475569;
-  --text-muted: #94A3B8;
+  --text-white: #FFFFFF;
+  --text-secondary: #B5BAC1;
+  --text-muted: #80848E;
+  --text-dark: #000000;
 
-  /* Brand Accent */
-  --brand-blue: #1A73E8;
-  --brand-blue-hover: #1557B0;
-  --brand-teal: #0D9488;
-  --brand-gradient: linear-gradient(135deg, #1A73E8 0%, #0D9488 100%);
-  --brand-glow: 0 4px 20px rgba(26, 115, 232, 0.18);
+  /* Gradients */
+  --brand-gradient: linear-gradient(135deg, #5865F2 0%, #8B5CF6 50%, #EC48BD 100%);
+  --brand-gradient-green: linear-gradient(135deg, #35ED7E 0%, #00B0F4 100%);
+  --glow-blurple: 0 0 24px rgba(88, 101, 242, 0.35);
+  --glow-green: 0 0 20px rgba(53, 237, 126, 0.35);
 
   /* Semantics */
-  --color-success: #10B981;
-  --color-success-bg: #ECFDF5;
-  --color-error: #DC2626;
-  --color-error-bg: #FEF2F2;
-  --color-warning: #D97706;
-  --color-warning-bg: #FFFBEB;
+  --color-error: #F23F43;
+  --color-error-bg: rgba(242, 63, 67, 0.15);
+  --color-warning: #F0B232;
+  --color-warning-bg: rgba(240, 178, 50, 0.15);
+  --color-success: #35ED7E;
+  --color-success-bg: rgba(53, 237, 126, 0.15);
 
-  /* Borders */
-  --border-subtle: 1px solid #E2E8F0;
-  --border-active: 1px solid #1A73E8;
+  /* Radii */
+  --radius-sm: 12px;
+  --radius-md: 14px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-pill: 9999px;
 }
 ```

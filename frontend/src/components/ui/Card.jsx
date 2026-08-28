@@ -1,41 +1,74 @@
-import React from "react";
+import React, { useState } from "react";
 
 export const Card = ({
   children,
-  variant = "surface", // surface, glass, glow
+  variant = "surface", // surface, indigo, glass, outline
+  interactive = false,
   className = "",
   style = {},
   onClick,
   ...props
 }) => {
+  const [isHovered, setIsHovered] = useState(false);
+
   const baseStyles = {
-    borderRadius: "var(--radius-lg)",
+    borderRadius: "var(--radius-md)",
     padding: "var(--space-lg)",
     transition: "all var(--dur-normal) var(--ease-spring)",
     border: "var(--border-subtle)",
+    position: "relative",
+    cursor: onClick || interactive ? "pointer" : "default",
+    transform: (onClick || interactive) && isHovered ? "translateY(-1.5px)" : "none",
   };
 
-  const variantStyles = {
-    surface: {
-      background: "var(--surface-1)",
-      boxShadow: "0 8px 32px rgba(0, 0, 0, 0.4)",
-    },
-    glass: {
-      background: "var(--surface-glass)",
-      backdropFilter: "blur(16px)",
-      boxShadow: "0 12px 40px rgba(0, 0, 0, 0.5)",
-    },
-    glow: {
-      background: "var(--surface-1)",
-      border: "var(--border-cyan)",
-      boxShadow: "var(--glow-cyan)",
-    },
-  }[variant];
+  const getVariantStyles = () => {
+    switch (variant) {
+      case "indigo":
+        return {
+          background: "var(--surface-indigo)",
+          boxShadow: isHovered && (onClick || interactive)
+            ? "var(--shadow-elevation-2)"
+            : "var(--shadow-elevation-1)",
+          borderColor: isHovered && (onClick || interactive)
+            ? "rgba(255, 255, 255, 0.15)"
+            : "var(--border-subtle)",
+        };
+      case "glass":
+        return {
+          background: "var(--surface-glass)",
+          backdropFilter: "blur(16px)",
+          WebkitBackdropFilter: "blur(16px)",
+          boxShadow: "var(--shadow-elevation-2)",
+          borderColor: isHovered && (onClick || interactive)
+            ? "var(--border-blurple)"
+            : "var(--border-subtle)",
+        };
+      case "outline":
+        return {
+          background: "transparent",
+          border: "var(--border-subtle)",
+          boxShadow: "none",
+        };
+      case "surface":
+      default:
+        return {
+          background: "var(--surface-card)",
+          boxShadow: isHovered && (onClick || interactive)
+            ? "var(--shadow-elevation-2)"
+            : "var(--shadow-elevation-1)",
+          borderColor: isHovered && (onClick || interactive)
+            ? "rgba(255, 255, 255, 0.14)"
+            : "var(--border-subtle)",
+        };
+    }
+  };
 
   return (
     <div
       onClick={onClick}
-      style={{ ...baseStyles, ...variantStyles, ...style }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      style={{ ...baseStyles, ...getVariantStyles(), ...style }}
       className={`syncmeet-card ${className}`}
       {...props}
     >

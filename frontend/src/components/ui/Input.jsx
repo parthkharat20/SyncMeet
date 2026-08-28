@@ -16,20 +16,21 @@ export const Input = ({
   ...props
 }) => {
   const [showPassword, setShowPassword] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
 
   const resolvedType = passwordToggle ? (showPassword ? "text" : "password") : type;
 
   return (
     <div style={{ width: fullWidth ? "100%" : "auto", display: "flex", flexDirection: "column", gap: "6px" }} className={className}>
       {label && (
-        <label style={{ fontSize: "13px", fontWeight: "600", color: "var(--text-secondary)", letterSpacing: "0.2px" }}>
+        <label style={{ fontSize: "13px", fontWeight: "600", color: "var(--text-secondary)" }}>
           {label}
         </label>
       )}
 
       <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
         {Icon && (
-          <span style={{ position: "absolute", left: "14px", color: "var(--text-muted)", display: "flex", alignItems: "center" }}>
+          <span style={{ position: "absolute", left: "12px", color: isFocused ? "var(--primary-blurple)" : "var(--text-muted)", display: "flex", alignItems: "center", transition: "color var(--dur-fast)" }}>
             <Icon style={{ fontSize: "18px" }} />
           </span>
         )}
@@ -38,19 +39,30 @@ export const Input = ({
           type={resolvedType}
           value={value}
           onChange={onChange}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
           placeholder={placeholder}
           style={{
             width: "100%",
-            padding: Icon ? "12px 42px 12px 40px" : passwordToggle ? "12px 42px 12px 14px" : "12px 14px",
-            background: "var(--surface-2)",
-            border: error ? "1px solid var(--color-error)" : "var(--border-subtle)",
-            borderRadius: "var(--radius-md)",
-            color: "var(--text-primary)",
-            fontSize: "15px",
+            padding: Icon ? "9px 40px 9px 38px" : passwordToggle ? "9px 58px 9px 12px" : "9px 12px",
+            background: "var(--surface-indigo)",
+            border: error
+              ? "1px solid var(--color-error)"
+              : isFocused
+              ? "1px solid var(--primary-blurple)"
+              : "var(--border-subtle)",
+            borderRadius: "var(--radius-sm)",
+            color: "var(--text-white)",
+            fontSize: "14px",
             fontFamily: "inherit",
             outline: "none",
-            transition: "all var(--dur-normal) var(--ease-spring)",
-            boxShadow: error ? "0 0 8px rgba(244, 63, 94, 0.25)" : "none",
+            height: "38px",
+            transition: "all var(--dur-fast) var(--ease-spring)",
+            boxShadow: error
+              ? "0 0 0 2px rgba(239, 68, 68, 0.15)"
+              : isFocused
+              ? "0 0 0 2px rgba(88, 101, 242, 0.15)"
+              : "none",
             ...style,
           }}
           {...props}
@@ -62,14 +74,19 @@ export const Input = ({
             onClick={() => setShowPassword((prev) => !prev)}
             style={{
               position: "absolute",
-              right: "12px",
+              right: "10px",
               background: "none",
               border: "none",
-              color: "var(--cyan-accent)",
+              color: "var(--text-muted)",
               cursor: "pointer",
-              fontSize: "13px",
+              fontSize: "12px",
               fontWeight: "600",
+              padding: "3px 6px",
+              borderRadius: "4px",
+              transition: "color var(--dur-fast)",
             }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = "var(--primary-blurple)")}
+            onMouseLeave={(e) => (e.currentTarget.style.color = "var(--text-muted)")}
           >
             {showPassword ? "Hide" : "Show"}
           </button>
@@ -80,8 +97,9 @@ export const Input = ({
         <span
           style={{
             fontSize: "12px",
+            fontWeight: "500",
             color: error ? "var(--color-error)" : "var(--text-muted)",
-            marginTop: "2px",
+            marginTop: "1px",
           }}
         >
           {error || helperText}

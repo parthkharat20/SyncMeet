@@ -1,12 +1,12 @@
-import React from 'react'
-import './App.css'
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import LandingPage from './pages/Landing.jsx'
-import Authentication from './pages/Auth.jsx'
-import { AuthProvider } from './contexts/AuthContext.jsx'
-import VideoMeetComponent from './pages/VideoMeet.jsx'
-import HomeComponent from './pages/Home.jsx'
-import History from './pages/History.jsx'
+import React from 'react';
+import './App.css';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import LandingPage from './pages/landing.jsx';
+import Authentication from './pages/Auth.jsx';
+import { AuthProvider } from './contexts/AuthContext.jsx';
+import VideoMeetComponent from './pages/VideoMeet.jsx';
+import HomeComponent from './pages/home.jsx';
+import History from './pages/history.jsx';
 
 function App() {
   return (

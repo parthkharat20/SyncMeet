@@ -13,6 +13,7 @@ import VideocamIcon from "@mui/icons-material/Videocam";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import CheckIcon from "@mui/icons-material/Check";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 
 export const History = () => {
   const navigate = useNavigate();
@@ -60,68 +61,72 @@ export const History = () => {
   };
 
   return (
-    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "var(--bg-dark)" }}>
+    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "var(--canvas)" }}>
       <Navbar />
 
-      <main style={{ flex: 1, padding: "var(--space-xl) var(--space-lg)", maxWidth: "1000px", margin: "0 auto", width: "100%" }}>
+      <main style={{ flex: 1, padding: "32px 24px", maxWidth: "960px", margin: "0 auto", width: "100%" }}>
         {/* Header */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "32px" }} className="animate-entrance">
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "28px", flexWrap: "wrap", gap: "14px" }} className="animate-entrance">
           <div>
-            <Button variant="ghost" size="sm" onClick={() => navigate("/home")} style={{ marginBottom: "12px" }}>
-              <ArrowBackIcon style={{ fontSize: "16px" }} />
-              <span>Back to Lobby</span>
+            <Button variant="ghost" size="sm" onClick={() => navigate("/home")} style={{ marginBottom: "10px" }}>
+              <ArrowBackIcon style={{ fontSize: "15px" }} />
+              <span>Back to Dashboard</span>
             </Button>
-            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
               <div
                 style={{
-                  width: "40px",
-                  height: "40px",
-                  borderRadius: "var(--radius-md)",
-                  background: "rgba(6, 182, 212, 0.15)",
-                  color: "var(--cyan-accent)",
+                  width: "36px",
+                  height: "36px",
+                  borderRadius: "var(--radius-sm)",
+                  background: "var(--surface-indigo)",
+                  color: "var(--primary-blurple)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                 }}
               >
-                <HistoryIcon style={{ fontSize: "24px" }} />
+                <HistoryIcon style={{ fontSize: "22px" }} />
               </div>
-              <h1 style={{ fontSize: "26px", fontWeight: "800" }}>Meeting Activity History</h1>
+              <h1 style={{ fontSize: "22px", fontWeight: "700", letterSpacing: "-0.02em", color: "var(--text-white)" }}>
+                Meeting History
+              </h1>
             </div>
           </div>
-          <Badge variant="cyan">{meetings.length} Total Records</Badge>
+          <Badge variant="neutral">{meetings.length} Total Records</Badge>
         </div>
 
         {errorMsg && (
-          <div style={{ marginBottom: "24px" }}>
+          <div style={{ marginBottom: "20px" }}>
             <Alert variant="error">{errorMsg}</Alert>
           </div>
         )}
 
         {loading ? (
-          <div style={{ padding: "80px 0", textAlign: "center", color: "var(--text-secondary)" }}>
-            <Spinner size={32} />
-            <p style={{ marginTop: "16px", fontSize: "15px" }}>Loading meeting activity records...</p>
+          <div style={{ padding: "64px 0", textAlign: "center", color: "var(--text-secondary)" }}>
+            <Spinner size={30} />
+            <p style={{ marginTop: "12px", fontSize: "14px" }}>Loading meeting activity records...</p>
           </div>
         ) : meetings.length === 0 ? (
-          <Card variant="glass" style={{ padding: "60px 24px", textAlign: "center" }}>
+          <Card variant="surface" style={{ padding: "48px 24px", textAlign: "center" }}>
             <div
               style={{
-                width: "64px",
-                height: "64px",
+                width: "52px",
+                height: "52px",
                 borderRadius: "50%",
-                background: "var(--surface-2)",
+                background: "var(--surface-indigo)",
                 color: "var(--text-muted)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                margin: "0 auto 20px auto",
+                margin: "0 auto 16px auto",
               }}
             >
-              <VideocamIcon style={{ fontSize: "32px" }} />
+              <VideocamIcon style={{ fontSize: "28px" }} />
             </div>
-            <h3 style={{ fontSize: "20px", fontWeight: "700", marginBottom: "8px" }}>No Meeting History Found</h3>
-            <p style={{ color: "var(--text-secondary)", fontSize: "14px", marginBottom: "24px" }}>
+            <h3 style={{ fontSize: "18px", fontWeight: "700", marginBottom: "6px", color: "var(--text-white)" }}>
+              No Meeting History Found
+            </h3>
+            <p style={{ color: "var(--text-secondary)", fontSize: "14px", marginBottom: "20px", maxWidth: "380px", margin: "0 auto 20px auto" }}>
               You haven't created or joined any video calls yet.
             </p>
             <Button variant="primary" size="md" onClick={() => navigate("/home")}>
@@ -129,82 +134,101 @@ export const History = () => {
             </Button>
           </Card>
         ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
             {meetings.map((item, index) => (
               <Card
                 key={item._id || index}
                 variant="surface"
+                interactive={true}
                 style={{
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "space-between",
-                  padding: "16px 24px",
+                  padding: "16px 20px",
                   flexWrap: "wrap",
-                  gap: "16px",
+                  gap: "14px",
                 }}
               >
-                <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
                   <div
                     style={{
-                      width: "40px",
-                      height: "40px",
-                      borderRadius: "var(--radius-md)",
-                      background: "var(--surface-2)",
+                      width: "38px",
+                      height: "38px",
+                      borderRadius: "var(--radius-sm)",
+                      background: "var(--surface-indigo)",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      color: "var(--cyan-accent)",
+                      color: "var(--primary-blurple)",
                     }}
                   >
-                    <VideocamIcon />
+                    <VideocamIcon style={{ fontSize: "20px" }} />
                   </div>
 
                   <div>
-                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                       <span
                         style={{
-                          fontSize: "18px",
+                          fontSize: "16px",
                           fontWeight: "700",
                           fontFamily: "var(--font-mono)",
-                          color: "var(--cyan-accent)",
-                          letterSpacing: "0.5px",
+                          color: "var(--text-white)",
                         }}
                       >
                         {item.meetingCode}
                       </span>
                       <button
+                        type="button"
                         onClick={() => handleCopyCode(item.meetingCode)}
                         style={{
-                          background: "none",
-                          border: "none",
-                          color: copiedCode === item.meetingCode ? "var(--color-success)" : "var(--text-muted)",
+                          background: "var(--surface-indigo)",
+                          border: "var(--border-subtle)",
+                          borderRadius: "var(--radius-xs)",
+                          padding: "3px 6px",
+                          color: copiedCode === item.meetingCode ? "var(--accent-green)" : "var(--text-muted)",
                           cursor: "pointer",
                           display: "flex",
                           alignItems: "center",
+                          gap: "4px",
+                          fontSize: "11px",
+                          fontWeight: "600",
                         }}
                         title="Copy Code"
                       >
-                        {copiedCode === item.meetingCode ? <CheckIcon style={{ fontSize: "16px" }} /> : <ContentCopyIcon style={{ fontSize: "16px" }} />}
+                        {copiedCode === item.meetingCode ? (
+                          <>
+                            <CheckIcon style={{ fontSize: "13px" }} />
+                            <span>COPIED</span>
+                          </>
+                        ) : (
+                          <>
+                            <ContentCopyIcon style={{ fontSize: "13px" }} />
+                            <span>COPY</span>
+                          </>
+                        )}
                       </button>
                     </div>
-                    <span style={{ fontSize: "13px", color: "var(--text-muted)", marginTop: "2px", display: "block" }}>
-                      Joined on {formatDate(item.date)}
-                    </span>
+                    <div style={{ display: "flex", alignItems: "center", gap: "5px", marginTop: "2px" }}>
+                      <CalendarTodayIcon style={{ fontSize: "12px", color: "var(--text-muted)" }} />
+                      <span style={{ fontSize: "12px", color: "var(--text-secondary)" }}>
+                        {formatDate(item.date)}
+                      </span>
+                    </div>
                   </div>
                 </div>
 
-                <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-                  <Badge variant={item.status === "ended" ? "error" : "success"}>
-                    {item.status === "ended" ? "Meeting Ended" : "Active Room"}
+                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                  <Badge variant={item.status === "ended" ? "error" : "green"}>
+                    {item.status === "ended" ? "Ended" : "Active"}
                   </Badge>
 
                   {item.status !== "ended" && (
                     <Button
-                      variant="outline"
+                      variant="secondary"
                       size="sm"
                       onClick={() => navigate(`/${item.meetingCode}`)}
                     >
-                      Rejoin Call
+                      Rejoin
                     </Button>
                   )}
                 </div>

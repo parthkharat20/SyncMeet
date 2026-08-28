@@ -1,54 +1,107 @@
 :root {
-  /* Surface Scale (Electric Dark Mode) */
-  --bg-main: #0B0F19;
-  --bg-dark: #0B0F19;
-  --surface-1: #111827;
-  --surface-2: #1F2937;
-  --surface-3: #374151;
-  --surface-glass: rgba(17, 24, 39, 0.75);
+  /* ─── 80-90% Neutral Dark Surface Scale ─── */
+  --canvas: #090a10;
+  --canvas-dark: #06070a;
+  --bg-main: #090a10;
+  --bg-dark: #06070a;
+  
+  --surface-card: #0f111a;
+  --surface-card-hover: #141724;
+  --surface-indigo: #151827;
+  --surface-indigo-hover: #1c2035;
+  --surface-onyx: #181b2a;
+  --surface-glass: rgba(9, 10, 16, 0.82);
+  --surface-glass-heavy: rgba(9, 10, 16, 0.95);
+  --surface-black: #000000;
 
-  /* Foreground & Typography Scale */
-  --text-primary: #F9FAFB;
-  --text-secondary: #9CA3AF;
-  --text-muted: #6B7280;
+  /* Backward Compatibility Aliases */
+  --surface-1: #0f111a;
+  --surface-2: #151827;
+  --surface-3: #1c2035;
 
-  /* Electric Cyan Brand Accents */
-  --cyan-accent: #06B6D4;
-  --cyan-hover: #0891B2;
-  --violet-accent: #8B5CF6;
-  --brand-gradient: linear-gradient(135deg, #06B6D4 0%, #3B82F6 50%, #8B5CF6 100%);
-  --glow-cyan: 0 0 20px rgba(6, 182, 212, 0.25);
+  /* ─── 10-20% Intentional Brand Accents ─── */
+  --primary-blurple: #5865f2;
+  --blurple-hover: #4752c4;
+  --blurple-active: #3c45a5;
+  --on-primary: #ffffff;
 
-  /* Semantics */
-  --color-success: #10B981;
-  --color-success-bg: rgba(16, 185, 129, 0.15);
-  --color-error: #F43F5E;
-  --color-error-bg: rgba(244, 63, 94, 0.15);
-  --color-warning: #F59E0B;
-  --color-warning-bg: rgba(245, 158, 11, 0.15);
-  --color-info: #3B82F6;
-  --color-info-bg: rgba(59, 130, 246, 0.15);
+  /* Semantic-only Indicators */
+  --accent-green: #22c55e;
+  --green-hover: #16a34a;
+  --color-success: #22c55e;
+  --color-success-bg: rgba(34, 197, 94, 0.12);
 
-  /* Hairline & Subtle Borders */
-  --border-subtle: 1px solid rgba(255, 255, 255, 0.1);
-  --border-cyan: 1px solid rgba(6, 182, 212, 0.4);
+  --color-error: #ef4444;
+  --color-error-bg: rgba(239, 68, 68, 0.12);
+  --color-danger: #ef4444;
 
-  /* Motion Signature */
-  --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
-  --dur-fast: 120ms;
-  --dur-normal: 240ms;
-  --dur-slow: 360ms;
+  --color-warning: #f59e0b;
+  --color-warning-bg: rgba(245, 158, 11, 0.12);
 
-  /* Radii */
+  --accent-cyan: #00b0f4;
+  --color-info: #00b0f4;
+  --color-info-bg: rgba(0, 176, 244, 0.12);
+
+  --accent-magenta: #ec48bd;
+
+  /* Backward Compatibility Aliases */
+  --brand-blue: #5865f2;
+  --brand-blue-hover: #4752c4;
+  --brand-teal: #22c55e;
+  --cyan-accent: #00b0f4;
+  --cyan-hover: #009ad6;
+  --violet-accent: #5865f2;
+
+  /* ─── Typography & Foreground Tokens ─── */
+  --text-white: #ffffff;
+  --text-primary: #f9fafb;
+  --text-secondary: #9ca3af;
+  --text-muted: #6b7280;
+  --text-dark: #030712;
+  --ink: #ffffff;
+  --ink-dark: #030712;
+
+  /* ─── Subtle Atmosphere (Restrained) ─── */
+  --brand-gradient: linear-gradient(135deg, #5865f2 0%, #7289da 100%);
+  --brand-gradient-subtle: linear-gradient(135deg, rgba(88, 101, 242, 0.12) 0%, rgba(114, 137, 218, 0.06) 100%);
+  --brand-mesh: radial-gradient(ellipse at 50% 0%, rgba(88, 101, 242, 0.12) 0%, transparent 65%),
+                radial-gradient(ellipse at 50% 100%, rgba(15, 17, 26, 0.8) 0%, transparent 60%);
+
+  /* ─── Refined Shadows (No Excessive Glows) ─── */
+  --glow-blurple: 0 0 16px rgba(88, 101, 242, 0.22);
+  --shadow-elevation-1: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-elevation-2: 0 8px 24px rgba(0, 0, 0, 0.45);
+  --shadow-floating: 0 12px 36px rgba(0, 0, 0, 0.6), 0 0 1px rgba(255, 255, 255, 0.12);
+
+  /* ─── Precise Hairline Borders ─── */
+  --border-subtle: 1px solid rgba(255, 255, 255, 0.07);
+  --border-medium: 1px solid rgba(255, 255, 255, 0.12);
+  --border-blurple: 1px solid rgba(88, 101, 242, 0.35);
+  --border-active: 1px solid var(--primary-blurple);
+  --border-cyan: 1px solid rgba(0, 176, 244, 0.3);
+
+  /* ─── Radii Scale ─── */
+  --radius-xs: 6px;
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
+  --radius-xl: 20px;
   --radius-pill: 9999px;
 
-  /* Spacing Scale */
-  --space-xs: 4px;
-  --space-sm: 8px;
+  /* ─── Spacing Scale ─── */
+  --space-xxs: 4px;
+  --space-xs: 8px;
+  --space-sm: 12px;
   --space-md: 16px;
-  --space-lg: 24px;
-  --space-xl: 32px;
+  --space-lg: 20px;
+  --space-xl: 24px;
+  --space-xxl: 32px;
+  --space-section: 48px;
+
+  /* ─── Motion ─── */
+  --dur-fast: 120ms;
+  --dur-normal: 180ms;
+  --dur-slow: 280ms;
+  --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
 }

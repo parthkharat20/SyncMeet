@@ -2,11 +2,11 @@ import React, { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import Navbar from "../components/layout/Navbar";
+import SyncMeetLogo from "../components/ui/SyncMeetLogo";
 import Card from "../components/ui/Card";
 import Alert from "../components/ui/Alert";
 import LoginForm from "../components/features/auth/LoginForm";
 import RegisterForm from "../components/features/auth/RegisterForm";
-import VideocamIcon from "@mui/icons-material/Videocam";
 
 export const Auth = () => {
   const [searchParams] = useSearchParams();
@@ -82,48 +82,37 @@ export const Auth = () => {
   };
 
   return (
-    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "var(--bg-dark)" }}>
+    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "var(--canvas)" }}>
       <Navbar />
 
       <main style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "40px 20px" }}>
         <div style={{ width: "100%", maxWidth: "440px" }} className="animate-entrance">
-          <Card variant="glass">
-            {/* Header / Brand */}
-            <div style={{ textAlign: "center", marginBottom: "28px" }}>
-              <div
-                style={{
-                  width: "48px",
-                  height: "48px",
-                  borderRadius: "var(--radius-md)",
-                  background: "var(--brand-gradient)",
-                  margin: "0 auto 16px auto",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  boxShadow: "var(--glow-cyan)",
-                }}
-              >
-                <VideocamIcon style={{ color: "#FFFFFF", fontSize: "28px" }} />
+          <Card variant="surface" style={{ padding: "32px 28px", border: "var(--border-subtle)" }}>
+            {/* Header Brand */}
+            <div style={{ textAlign: "center", marginBottom: "24px" }}>
+              <div style={{ display: "inline-flex", marginBottom: "14px" }}>
+                <SyncMeetLogo size="lg" variant="mark" />
               </div>
-              <h1 style={{ fontSize: "24px", fontWeight: "800", letterSpacing: "-0.5px" }}>
-                {activeTab === "login" ? "Sign In to SyncMeet" : "Create Account"}
+              <h1 style={{ fontSize: "22px", fontWeight: "700", letterSpacing: "-0.02em", color: "var(--text-white)" }}>
+                {activeTab === "login" ? "Sign in to SyncMeet" : "Create an account"}
               </h1>
-              <p style={{ color: "var(--text-secondary)", fontSize: "14px", marginTop: "6px" }}>
+              <p style={{ color: "var(--text-secondary)", fontSize: "14px", marginTop: "4px" }}>
                 {activeTab === "login"
-                  ? "Enter your credentials to access your meetings"
-                  : "Join SyncMeet for seamless peer-to-peer video calls"}
+                  ? "Welcome back. Enter your details to continue."
+                  : "Start hosting seamless video meetings."}
               </p>
             </div>
 
-            {/* Tab Switcher */}
+            {/* Segmented Pill Switcher */}
             <div
               style={{
                 display: "grid",
                 gridTemplateColumns: "1fr 1fr",
-                background: "var(--surface-2)",
-                padding: "4px",
-                borderRadius: "var(--radius-pill)",
-                marginBottom: "24px",
+                background: "var(--surface-indigo)",
+                padding: "3px",
+                borderRadius: "var(--radius-sm)",
+                marginBottom: "20px",
+                border: "var(--border-subtle)",
               }}
             >
               <button
@@ -134,16 +123,16 @@ export const Auth = () => {
                   setSuccessMsg("");
                 }}
                 style={{
-                  padding: "8px",
-                  fontSize: "14px",
+                  padding: "7px",
+                  fontSize: "13px",
                   fontWeight: "600",
-                  borderRadius: "var(--radius-pill)",
+                  borderRadius: "6px",
                   border: "none",
-                  background: activeTab === "login" ? "var(--brand-gradient)" : "transparent",
+                  background: activeTab === "login" ? "var(--surface-card)" : "transparent",
                   color: activeTab === "login" ? "#FFFFFF" : "var(--text-secondary)",
                   cursor: "pointer",
-                  transition: "all var(--dur-normal) var(--ease-spring)",
-                  boxShadow: activeTab === "login" ? "var(--glow-cyan)" : "none",
+                  transition: "all var(--dur-fast) var(--ease-spring)",
+                  boxShadow: activeTab === "login" ? "var(--shadow-elevation-1)" : "none",
                 }}
               >
                 Sign In
@@ -156,16 +145,16 @@ export const Auth = () => {
                   setSuccessMsg("");
                 }}
                 style={{
-                  padding: "8px",
-                  fontSize: "14px",
+                  padding: "7px",
+                  fontSize: "13px",
                   fontWeight: "600",
-                  borderRadius: "var(--radius-pill)",
+                  borderRadius: "6px",
                   border: "none",
-                  background: activeTab === "register" ? "var(--brand-gradient)" : "transparent",
+                  background: activeTab === "register" ? "var(--surface-card)" : "transparent",
                   color: activeTab === "register" ? "#FFFFFF" : "var(--text-secondary)",
                   cursor: "pointer",
-                  transition: "all var(--dur-normal) var(--ease-spring)",
-                  boxShadow: activeTab === "register" ? "var(--glow-cyan)" : "none",
+                  transition: "all var(--dur-fast) var(--ease-spring)",
+                  boxShadow: activeTab === "register" ? "var(--shadow-elevation-1)" : "none",
                 }}
               >
                 Register
@@ -173,7 +162,7 @@ export const Auth = () => {
             </div>
 
             {successMsg && (
-              <div style={{ marginBottom: "20px" }}>
+              <div style={{ marginBottom: "16px" }}>
                 <Alert variant="success">{successMsg}</Alert>
               </div>
             )}
@@ -183,6 +172,31 @@ export const Auth = () => {
             ) : (
               <RegisterForm onSubmit={onRegisterSubmit} loading={loading} externalError={errorMsg} />
             )}
+
+            {/* Quick Switch */}
+            <div style={{ textAlign: "center", marginTop: "20px", paddingTop: "16px", borderTop: "var(--border-subtle)" }}>
+              <p style={{ fontSize: "13px", color: "var(--text-muted)" }}>
+                {activeTab === "login" ? "Don't have an account?" : "Already have an account?"}{" "}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveTab(activeTab === "login" ? "register" : "login");
+                    setErrorMsg("");
+                    setSuccessMsg("");
+                  }}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    color: "var(--primary-blurple)",
+                    fontWeight: "600",
+                    cursor: "pointer",
+                    fontSize: "13px",
+                  }}
+                >
+                  {activeTab === "login" ? "Register" : "Sign In"}
+                </button>
+              </p>
+            </div>
           </Card>
         </div>
       </main>

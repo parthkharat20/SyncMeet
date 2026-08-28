@@ -1,21 +1,55 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/layout/Navbar";
+import SyncMeetLogo from "../components/ui/SyncMeetLogo";
+import KineticMatrix from "../components/ui/KineticMatrix";
 import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
 import Input from "../components/ui/Input";
 import Badge from "../components/ui/Badge";
+
 import VideocamIcon from "@mui/icons-material/Videocam";
-import SecurityIcon from "@mui/icons-material/Security";
-import SpeedIcon from "@mui/icons-material/Speed";
-import GroupsIcon from "@mui/icons-material/Groups";
 import KeyboardIcon from "@mui/icons-material/Keyboard";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
-import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
+import MicIcon from "@mui/icons-material/Mic";
+import MicOffIcon from "@mui/icons-material/MicOff";
+import ScreenShareIcon from "@mui/icons-material/ScreenShare";
+import ChatIcon from "@mui/icons-material/Chat";
+import CallEndIcon from "@mui/icons-material/CallEnd";
+import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
+import SecurityIcon from "@mui/icons-material/Security";
+import SpeedIcon from "@mui/icons-material/Speed";
+import HubIcon from "@mui/icons-material/Hub";
 
 export const Landing = () => {
   const navigate = useNavigate();
   const [meetingCode, setMeetingCode] = useState("");
+
+  // 3D Tilt State for Floating Product Preview
+  const previewRef = useRef(null);
+  const [tilt, setTilt] = useState({ x: 0, y: 0 });
+  const [isHovered, setIsHovered] = useState(false);
+
+  const handleMouseMove = (e) => {
+    if (!previewRef.current) return;
+    const rect = previewRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+
+    // Subtle 3D tilt angles (max +/- 6 deg)
+    const rotateX = ((y - centerY) / centerY) * -5.0;
+    const rotateY = ((x - centerX) / centerX) * 5.0;
+
+    setTilt({ x: rotateX, y: rotateY });
+  };
+
+  const handleMouseLeave = () => {
+    setIsHovered(false);
+    setTilt({ x: 0, y: 0 });
+  };
 
   const handleQuickJoin = (e) => {
     e.preventDefault();
@@ -26,152 +60,622 @@ export const Landing = () => {
     }
   };
 
+  const handleCreateMeetingQuick = () => {
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    let code = "";
+    for (let i = 0; i < 7; i++) {
+      code += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    navigate(`/${code}`);
+  };
+
   return (
-    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "#FFFFFF" }}>
+    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "var(--canvas)" }}>
       <Navbar />
 
-      {/* Hero Section */}
-      <section style={{ padding: "80px 24px 60px 24px", maxWidth: "1200px", margin: "0 auto", textAlign: "center" }} className="animate-entrance">
-        <Badge variant="cyan" style={{ marginBottom: "20px" }}>
-          ⚡ NEXT-GEN P2P WEBRTC CONFERENCING
-        </Badge>
+      {/* ─── 1. Cinematic Hero Section with Visible KineticMatrix & 3D Depth ─── */}
+      <section
+        style={{
+          position: "relative",
+          padding: "72px 24px 36px 24px",
+          overflow: "hidden",
+          width: "100%",
+        }}
+      >
+        {/* Layer 1: Visible KineticMatrix Canvas */}
+        <KineticMatrix />
 
-        <h1
+        {/* Layer 2: Subtle Blurple Atmospheric Ambient Glow */}
+        <div
           style={{
-            fontSize: "clamp(36px, 6vw, 60px)",
-            fontWeight: "800",
-            lineHeight: "1.15",
-            letterSpacing: "-1.5px",
-            maxWidth: "900px",
-            margin: "0 auto 24px auto",
-            color: "#0F172A",
+            position: "absolute",
+            top: 0,
+            left: "50%",
+            transform: "translateX(-50%)",
+            width: "800px",
+            height: "450px",
+            background: "radial-gradient(ellipse at 50% 20%, rgba(88, 101, 242, 0.20) 0%, transparent 65%)",
+            pointerEvents: "none",
+            zIndex: 1,
           }}
-        >
-          Premium Video Meetings. <br />
-          <span style={{ color: "var(--brand-blue)" }}>
-            Simple, Fast, and Secure.
-          </span>
-        </h1>
+        />
 
-        <p
+        {/* Layer 3: Radial Vignette for Content Contrast */}
+        <div
           style={{
-            color: "#475569",
-            fontSize: "clamp(16px, 2vw, 20px)",
-            maxWidth: "680px",
-            margin: "0 auto 40px auto",
-            lineHeight: "1.6",
+            position: "absolute",
+            inset: 0,
+            background: "radial-gradient(ellipse at 50% 35%, rgba(9, 10, 16, 0.40) 0%, rgba(9, 10, 16, 0.94) 85%)",
+            pointerEvents: "none",
+            zIndex: 2,
           }}
-        >
-          SyncMeet combines direct peer-to-peer WebRTC mesh architecture with Socket.IO signaling for instant video collaboration.
-        </p>
+        />
 
-        {/* Quick Room Entry / Action Bar */}
-        <Card
-          variant="elevated"
+        {/* Layer 4: Hero Foreground Content */}
+        <div
           style={{
-            maxWidth: "520px",
-            margin: "0 auto 48px auto",
-            padding: "16px 20px",
-            border: "1px solid #E2E8F0",
+            position: "relative",
+            zIndex: 3,
+            maxWidth: "960px",
+            margin: "0 auto",
+            textAlign: "center",
           }}
+          className="animate-entrance"
         >
-          <form onSubmit={handleQuickJoin} style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-            <div style={{ flex: 1 }}>
-              <Input
-                icon={KeyboardIcon}
-                placeholder="Enter a code or link"
-                value={meetingCode}
-                onChange={(e) => setMeetingCode(e.target.value.toUpperCase())}
-              />
-            </div>
-            <Button type="submit" variant="primary" size="md">
-              <span>Join</span>
-              <ArrowForwardIcon style={{ fontSize: "18px" }} />
+          {/* Eyebrow */}
+          <div style={{ display: "inline-flex", marginBottom: "18px" }}>
+            <Badge variant="blurple">
+              BROWSER-BASED • DIRECT P2P • REAL-TIME
+            </Badge>
+          </div>
+
+          {/* Headline */}
+          <h1
+            style={{
+              fontSize: "clamp(40px, 5.8vw, 64px)",
+              fontWeight: "800",
+              lineHeight: "1.08",
+              letterSpacing: "-0.03em",
+              maxWidth: "820px",
+              margin: "0 auto 16px auto",
+              color: "var(--text-white)",
+              fontFamily: "'Plus Jakarta Sans', sans-serif",
+            }}
+          >
+            Meet. Talk. Collaborate.
+          </h1>
+
+          {/* Subtitle */}
+          <p
+            style={{
+              color: "var(--text-secondary)",
+              fontSize: "clamp(16px, 1.8vw, 19px)",
+              maxWidth: "560px",
+              margin: "0 auto 32px auto",
+              lineHeight: "1.55",
+              fontWeight: "400",
+            }}
+          >
+            High-quality video meetings without complicated setup or app downloads.
+          </p>
+
+          {/* Action Row */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "12px",
+              flexWrap: "wrap",
+              maxWidth: "520px",
+              margin: "0 auto 32px auto",
+            }}
+          >
+            <Button variant="primary" size="lg" onClick={handleCreateMeetingQuick} style={{ flexShrink: 0 }}>
+              <VideocamIcon style={{ fontSize: "20px" }} />
+              <span>Start a Meeting</span>
             </Button>
-          </form>
-        </Card>
 
-        {/* Key USPs */}
-        <div style={{ display: "flex", justifyContent: "center", flexWrap: "wrap", gap: "24px", color: "#475569", fontSize: "14px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <CheckCircleOutlineIcon style={{ color: "var(--color-success)", fontSize: "18px" }} />
-            <span>No Downloads Required</span>
+            <form onSubmit={handleQuickJoin} style={{ display: "flex", gap: "8px", flex: "1 1 240px" }}>
+              <div style={{ flex: 1 }}>
+                <Input
+                  icon={KeyboardIcon}
+                  placeholder="Enter room code"
+                  value={meetingCode}
+                  onChange={(e) => setMeetingCode(e.target.value.toUpperCase())}
+                  maxLength={20}
+                />
+              </div>
+              <Button type="submit" variant="secondary" size="md">
+                <span>Join</span>
+                <ArrowForwardIcon style={{ fontSize: "16px" }} />
+              </Button>
+            </form>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <CheckCircleOutlineIcon style={{ color: "var(--color-success)", fontSize: "18px" }} />
-            <span>Up to 6 HD Participants</span>
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <CheckCircleOutlineIcon style={{ color: "var(--color-success)", fontSize: "18px" }} />
-            <span>Auto-Reconnect Recovery</span>
+
+          {/* Capabilities Strip */}
+          <div
+            style={{
+              display: "inline-flex",
+              justifyContent: "center",
+              alignItems: "center",
+              flexWrap: "wrap",
+              gap: "14px 20px",
+              padding: "9px 18px",
+              background: "rgba(15, 17, 26, 0.85)",
+              backdropFilter: "blur(12px)",
+              WebkitBackdropFilter: "blur(12px)",
+              borderRadius: "var(--radius-pill)",
+              border: "var(--border-subtle)",
+              fontSize: "12px",
+              fontWeight: "600",
+              color: "var(--text-secondary)",
+              textAlign: "center",
+              margin: "0 auto",
+            }}
+          >
+            <span>HD VIDEO</span>
+            <span style={{ color: "rgba(255,255,255,0.18)" }}>•</span>
+            <span>SCREEN SHARING</span>
+            <span style={{ color: "rgba(255,255,255,0.18)" }}>•</span>
+            <span>IN-CALL CHAT</span>
+            <span style={{ color: "rgba(255,255,255,0.18)" }}>•</span>
+            <span>NO DOWNLOADS</span>
+            <span style={{ color: "rgba(255,255,255,0.18)" }}>•</span>
+            <span>UP TO 6 PARTICIPANTS</span>
           </div>
         </div>
       </section>
 
-      {/* Feature Grid Section */}
-      <section style={{ padding: "60px 24px", maxWidth: "1200px", margin: "0 auto", width: "100%", borderTop: "1px solid #E2E8F0" }}>
-        <div style={{ textAlign: "center", marginBottom: "48px" }}>
-          <h2 style={{ fontSize: "32px", fontWeight: "800", color: "#0F172A", letterSpacing: "-0.5px" }}>
-            Engineered for Uncompromising Reliability
+      {/* ─── 2. Layer 6: Interactive 3D Product Showcase with Smooth Perspective Tilt ─── */}
+      <section
+        style={{
+          padding: "16px 24px 72px 24px",
+          maxWidth: "980px",
+          margin: "0 auto",
+          width: "100%",
+          perspective: "1200px",
+        }}
+      >
+        <div
+          ref={previewRef}
+          onMouseMove={handleMouseMove}
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={handleMouseLeave}
+          style={{
+            background: "var(--surface-card)",
+            border: "var(--border-subtle)",
+            borderRadius: "var(--radius-lg)",
+            overflow: "hidden",
+            boxShadow: isHovered
+              ? "0 24px 60px rgba(0, 0, 0, 0.75), 0 0 20px rgba(88, 101, 242, 0.18)"
+              : "var(--shadow-floating)",
+            transform: `rotateX(${tilt.x}deg) rotateY(${tilt.y}deg) translateZ(${isHovered ? "12px" : "0px"})`,
+            transition: isHovered ? "transform 100ms ease-out, box-shadow 200ms ease" : "transform 400ms var(--ease-spring), box-shadow 400ms ease",
+            transformStyle: "preserve-3d",
+          }}
+        >
+          {/* Mockup Header Bar */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              padding: "12px 20px",
+              background: "var(--surface-indigo)",
+              borderBottom: "var(--border-subtle)",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              <SyncMeetLogo size="xs" variant="full" />
+              <span style={{ color: "var(--text-muted)", fontSize: "12px" }}>/</span>
+              <span style={{ fontWeight: "700", fontSize: "13px", fontFamily: "var(--font-mono)", color: "var(--primary-blurple)" }}>
+                #PROD-SYNC
+              </span>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <Badge variant="green" dot={true}>4 Active</Badge>
+            </div>
+          </div>
+
+          {/* Video Grid Canvas */}
+          <div style={{ padding: "20px", background: "var(--canvas-dark)" }}>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+                gap: "12px",
+                marginBottom: "20px",
+              }}
+            >
+              {/* Tile 1 (Speaking with subtle green ring) */}
+              <div
+                style={{
+                  height: "150px",
+                  background: "#131625",
+                  borderRadius: "var(--radius-sm)",
+                  border: "1.5px solid var(--accent-green)",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  position: "relative",
+                }}
+              >
+                <div
+                  style={{
+                    width: "48px",
+                    height: "48px",
+                    borderRadius: "50%",
+                    background: "var(--primary-blurple)",
+                    color: "#ffffff",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: "16px",
+                    fontWeight: "700",
+                  }}
+                >
+                  AK
+                </div>
+                <div
+                  style={{
+                    position: "absolute",
+                    bottom: "8px",
+                    left: "10px",
+                    right: "10px",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <span style={{ fontSize: "11px", fontWeight: "600", color: "#ffffff", background: "rgba(0,0,0,0.65)", padding: "2px 6px", borderRadius: "4px" }}>
+                    Alex Kim (Host)
+                  </span>
+                  <MicIcon style={{ color: "var(--accent-green)", fontSize: "15px" }} />
+                </div>
+              </div>
+
+              {/* Tile 2 */}
+              <div
+                style={{
+                  height: "150px",
+                  background: "#10121d",
+                  borderRadius: "var(--radius-sm)",
+                  border: "var(--border-subtle)",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  position: "relative",
+                }}
+              >
+                <div
+                  style={{
+                    width: "48px",
+                    height: "48px",
+                    borderRadius: "50%",
+                    background: "#7c3aed",
+                    color: "#ffffff",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: "16px",
+                    fontWeight: "700",
+                  }}
+                >
+                  SP
+                </div>
+                <div
+                  style={{
+                    position: "absolute",
+                    bottom: "8px",
+                    left: "10px",
+                    right: "10px",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <span style={{ fontSize: "11px", fontWeight: "600", color: "#ffffff", background: "rgba(0,0,0,0.65)", padding: "2px 6px", borderRadius: "4px" }}>
+                    Sarah Patel
+                  </span>
+                  <MicIcon style={{ color: "var(--accent-green)", fontSize: "15px" }} />
+                </div>
+              </div>
+
+              {/* Tile 3 */}
+              <div
+                style={{
+                  height: "150px",
+                  background: "#10121d",
+                  borderRadius: "var(--radius-sm)",
+                  border: "var(--border-subtle)",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  position: "relative",
+                }}
+              >
+                <div
+                  style={{
+                    width: "48px",
+                    height: "48px",
+                    borderRadius: "50%",
+                    background: "#0891b2",
+                    color: "#ffffff",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: "16px",
+                    fontWeight: "700",
+                  }}
+                >
+                  DL
+                </div>
+                <div
+                  style={{
+                    position: "absolute",
+                    bottom: "8px",
+                    left: "10px",
+                    right: "10px",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <span style={{ fontSize: "11px", fontWeight: "600", color: "#ffffff", background: "rgba(0,0,0,0.65)", padding: "2px 6px", borderRadius: "4px" }}>
+                    David Lee
+                  </span>
+                  <MicOffIcon style={{ color: "var(--color-error)", fontSize: "15px" }} />
+                </div>
+              </div>
+
+              {/* Tile 4 */}
+              <div
+                style={{
+                  height: "150px",
+                  background: "#10121d",
+                  borderRadius: "var(--radius-sm)",
+                  border: "var(--border-subtle)",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  position: "relative",
+                }}
+              >
+                <div
+                  style={{
+                    width: "48px",
+                    height: "48px",
+                    borderRadius: "50%",
+                    background: "#27272a",
+                    color: "#ffffff",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: "16px",
+                    fontWeight: "700",
+                    border: "1px solid rgba(255,255,255,0.15)",
+                  }}
+                >
+                  JW
+                </div>
+                <div
+                  style={{
+                    position: "absolute",
+                    bottom: "8px",
+                    left: "10px",
+                    right: "10px",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <span style={{ fontSize: "11px", fontWeight: "600", color: "#ffffff", background: "rgba(0,0,0,0.65)", padding: "2px 6px", borderRadius: "4px" }}>
+                    Jordan Ward
+                  </span>
+                  <MicIcon style={{ color: "var(--accent-green)", fontSize: "15px" }} />
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom Controls Toolbar */}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "10px",
+                background: "var(--surface-card)",
+                border: "var(--border-subtle)",
+                padding: "8px 18px",
+                borderRadius: "var(--radius-pill)",
+                width: "fit-content",
+                margin: "0 auto",
+              }}
+            >
+              <div style={{ width: "34px", height: "34px", borderRadius: "50%", background: "var(--surface-indigo)", display: "flex", alignItems: "center", justifyContent: "center", color: "#ffffff" }}>
+                <MicIcon style={{ fontSize: "18px" }} />
+              </div>
+              <div style={{ width: "34px", height: "34px", borderRadius: "50%", background: "var(--surface-indigo)", display: "flex", alignItems: "center", justifyContent: "center", color: "#ffffff" }}>
+                <VideocamIcon style={{ fontSize: "18px" }} />
+              </div>
+              <div style={{ width: "34px", height: "34px", borderRadius: "50%", background: "var(--primary-blurple)", display: "flex", alignItems: "center", justifyContent: "center", color: "#ffffff" }}>
+                <ScreenShareIcon style={{ fontSize: "18px" }} />
+              </div>
+              <div style={{ width: "34px", height: "34px", borderRadius: "50%", background: "var(--surface-indigo)", display: "flex", alignItems: "center", justifyContent: "center", color: "#ffffff" }}>
+                <ChatIcon style={{ fontSize: "18px" }} />
+              </div>
+              <div style={{ width: "34px", height: "34px", borderRadius: "50%", background: "var(--surface-indigo)", display: "flex", alignItems: "center", justifyContent: "center", color: "#ffffff" }}>
+                <PeopleAltIcon style={{ fontSize: "18px" }} />
+              </div>
+              <div style={{ width: "38px", height: "38px", borderRadius: "50%", background: "var(--color-error)", display: "flex", alignItems: "center", justifyContent: "center", color: "#ffffff", marginLeft: "4px" }}>
+                <CallEndIcon style={{ fontSize: "18px" }} />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── 3. Structured Feature Storytelling ─── */}
+      <section style={{ padding: "16px 24px 64px 24px", maxWidth: "1080px", margin: "0 auto", width: "100%" }}>
+        <div style={{ marginBottom: "36px" }}>
+          <span style={{ fontSize: "12px", fontWeight: "700", letterSpacing: "0.06em", color: "var(--primary-blurple)", textTransform: "uppercase" }}>
+            PRODUCT CAPABILITIES
+          </span>
+          <h2 style={{ fontSize: "28px", fontWeight: "800", letterSpacing: "-0.02em", color: "var(--text-white)", marginTop: "6px" }}>
+            Designed for frictionless communication.
           </h2>
-          <p style={{ color: "#475569", fontSize: "16px", marginTop: "8px" }}>
-            Built on verified production WebRTC mesh architecture.
-          </p>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "24px" }}>
-          {/* Feature 1 */}
-          <Card variant="surface" style={{ border: "1px solid #E2E8F0" }}>
-            <div style={{ width: "48px", height: "48px", borderRadius: "var(--radius-md)", background: "#E8F0FE", color: "var(--brand-blue)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "20px" }}>
-              <SpeedIcon style={{ fontSize: "28px" }} />
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "20px" }}>
+          {/* Card 01 */}
+          <Card variant="surface" style={{ padding: "28px" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px" }}>
+              <span style={{ fontSize: "13px", fontWeight: "800", fontFamily: "var(--font-mono)", color: "var(--primary-blurple)" }}>
+                01
+              </span>
+              <SpeedIcon style={{ color: "var(--text-muted)", fontSize: "22px" }} />
             </div>
-            <h3 style={{ fontSize: "20px", fontWeight: "700", color: "#0F172A", marginBottom: "8px" }}>Zero Glare Signaling</h3>
-            <p style={{ color: "#475569", fontSize: "14px", lineHeight: "1.6" }}>
-              Deterministic joiner offer rules prevent SDP glare and guarantee handshake completion on every call.
+            <h3 style={{ fontSize: "18px", fontWeight: "700", color: "var(--text-white)", marginBottom: "8px" }}>
+              Start instantly
+            </h3>
+            <p style={{ color: "var(--text-secondary)", fontSize: "14px", lineHeight: "1.6" }}>
+              Create or join a meeting room in one click directly from any modern web browser. No accounts or software downloads required.
             </p>
           </Card>
 
-          {/* Feature 2 */}
-          <Card variant="surface" style={{ border: "1px solid #E2E8F0" }}>
-            <div style={{ width: "48px", height: "48px", borderRadius: "var(--radius-md)", background: "#F0FDFA", color: "var(--brand-teal)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "20px" }}>
-              <SecurityIcon style={{ fontSize: "28px" }} />
+          {/* Card 02 */}
+          <Card variant="surface" style={{ padding: "28px" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px" }}>
+              <span style={{ fontSize: "13px", fontWeight: "800", fontFamily: "var(--font-mono)", color: "var(--primary-blurple)" }}>
+                02
+              </span>
+              <HubIcon style={{ color: "var(--text-muted)", fontSize: "22px" }} />
             </div>
-            <h3 style={{ fontSize: "20px", fontWeight: "700", color: "#0F172A", marginBottom: "8px" }}>Security Hardened</h3>
-            <p style={{ color: "#475569", fontSize: "14px", lineHeight: "1.6" }}>
-              Bcrypt 10-round hashing, 7-day session token TTLs, and rate-limited authentication endpoints.
+            <h3 style={{ fontSize: "18px", fontWeight: "700", color: "var(--text-white)", marginBottom: "8px" }}>
+              Direct peer-to-peer
+            </h3>
+            <p style={{ color: "var(--text-secondary)", fontSize: "14px", lineHeight: "1.6" }}>
+              Real-time WebRTC mesh architecture connects participants directly, ensuring lightweight streaming with minimal intermediary latency.
             </p>
           </Card>
 
-          {/* Feature 3 */}
-          <Card variant="surface" style={{ border: "1px solid #E2E8F0" }}>
-            <div style={{ width: "48px", height: "48px", borderRadius: "var(--radius-md)", background: "#ECFDF5", color: "var(--color-success)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "20px" }}>
-              <GroupsIcon style={{ fontSize: "28px" }} />
+          {/* Card 03 */}
+          <Card variant="surface" style={{ padding: "28px" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px" }}>
+              <span style={{ fontSize: "13px", fontWeight: "800", fontFamily: "var(--font-mono)", color: "var(--primary-blurple)" }}>
+                03
+              </span>
+              <SecurityIcon style={{ color: "var(--text-muted)", fontSize: "22px" }} />
             </div>
-            <h3 style={{ fontSize: "20px", fontWeight: "700", color: "#0F172A", marginBottom: "8px" }}>Mesh Scaling Cap</h3>
-            <p style={{ color: "#475569", fontSize: "14px", lineHeight: "1.6" }}>
-              Enforces 6-participant limit per room to preserve CPU, network bandwidth, and video quality.
+            <h3 style={{ fontSize: "18px", fontWeight: "700", color: "var(--text-white)", marginBottom: "8px" }}>
+              Built for small groups
+            </h3>
+            <p style={{ color: "var(--text-secondary)", fontSize: "14px", lineHeight: "1.6" }}>
+              Optimized for interactive team discussions, pair programming, and small group huddles up to 6 participants.
             </p>
           </Card>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section style={{ padding: "60px 24px 80px 24px", maxWidth: "900px", margin: "0 auto", width: "100%", textAlign: "center" }}>
-        <Card variant="elevated" style={{ padding: "48px 32px", background: "linear-gradient(180deg, #F8FAFC 0%, #FFFFFF 100%)", border: "1px solid #E2E8F0" }}>
-          <h2 style={{ fontSize: "32px", fontWeight: "800", color: "#0F172A", marginBottom: "12px" }}>
-            Ready to experience SyncMeet?
+      {/* ─── 4. Technology & Architecture Badges ─── */}
+      <section style={{ padding: "0 24px 64px 24px", maxWidth: "1080px", margin: "0 auto", width: "100%" }}>
+        <div
+          style={{
+            background: "var(--surface-card)",
+            border: "var(--border-subtle)",
+            borderRadius: "var(--radius-md)",
+            padding: "24px 28px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            flexWrap: "wrap",
+            gap: "16px",
+          }}
+        >
+          <div>
+            <span style={{ fontSize: "14px", fontWeight: "700", color: "var(--text-white)", display: "block" }}>
+              Built on modern browser technologies
+            </span>
+            <span style={{ fontSize: "13px", color: "var(--text-muted)" }}>
+              Standards-compliant WebRTC mesh with Socket.IO signaling.
+            </span>
+          </div>
+
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+            <Badge variant="neutral">WebRTC Mesh</Badge>
+            <Badge variant="neutral">Socket.IO</Badge>
+            <Badge variant="neutral">P2P Streams</Badge>
+            <Badge variant="neutral">JWT Auth</Badge>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── 5. Restrained Final CTA ─── */}
+      <section style={{ padding: "0 24px 64px 24px", maxWidth: "780px", margin: "0 auto", width: "100%", textAlign: "center" }}>
+        <div
+          style={{
+            background: "var(--surface-card)",
+            border: "var(--border-subtle)",
+            borderRadius: "var(--radius-lg)",
+            padding: "44px 32px",
+          }}
+        >
+          <h2 style={{ fontSize: "26px", fontWeight: "800", letterSpacing: "-0.02em", color: "var(--text-white)", marginBottom: "10px" }}>
+            Ready for your next meeting?
           </h2>
-          <p style={{ color: "#475569", fontSize: "16px", marginBottom: "32px" }}>
-            Create your account in seconds and host seamless video calls.
+          <p style={{ color: "var(--text-secondary)", fontSize: "15px", marginBottom: "28px" }}>
+            Start a room in seconds. No downloads required.
           </p>
-          <div style={{ display: "flex", justifyContent: "center", gap: "16px" }}>
-            <Button variant="primary" size="lg" onClick={() => navigate("/auth?tab=register")}>
-              <VideocamIcon />
+          <div style={{ display: "flex", justifyContent: "center", gap: "12px", flexWrap: "wrap" }}>
+            <Button variant="primary" size="lg" onClick={handleCreateMeetingQuick}>
+              <span>Start a Meeting</span>
+              <ArrowForwardIcon style={{ fontSize: "16px" }} />
+            </Button>
+            <Button variant="secondary" size="lg" onClick={() => navigate("/auth?tab=register")}>
               <span>Create Free Account</span>
             </Button>
           </div>
-        </Card>
+        </div>
       </section>
+
+      {/* ─── 6. Clean Minimalist Footer ─── */}
+      <footer
+        style={{
+          borderTop: "var(--border-subtle)",
+          padding: "32px 32px 24px 32px",
+          background: "var(--canvas-dark)",
+          marginTop: "auto",
+        }}
+      >
+        <div
+          style={{
+            maxWidth: "1080px",
+            margin: "0 auto",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            flexWrap: "wrap",
+            gap: "20px",
+          }}
+        >
+          <SyncMeetLogo size="sm" variant="full" />
+
+          <div style={{ display: "flex", gap: "20px", fontSize: "13px", color: "var(--text-secondary)" }}>
+            <span style={{ cursor: "pointer" }} onClick={() => navigate("/auth")}>Sign In</span>
+            <span style={{ cursor: "pointer" }} onClick={() => navigate("/home")}>Dashboard</span>
+            <span style={{ cursor: "pointer" }} onClick={() => navigate("/history")}>History</span>
+          </div>
+
+          <span style={{ fontSize: "12px", color: "var(--text-muted)" }}>
+            © {new Date().getFullYear()} SyncMeet. All rights reserved.
+          </span>
+        </div>
+      </footer>
     </div>
   );
 };

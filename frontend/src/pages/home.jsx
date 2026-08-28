@@ -9,11 +9,18 @@ import Button from "../components/ui/Button";
 import Input from "../components/ui/Input";
 import Alert from "../components/ui/Alert";
 import Badge from "../components/ui/Badge";
+import SyncMeetLogo from "../components/ui/SyncMeetLogo";
+
 import VideocamIcon from "@mui/icons-material/Videocam";
 import AddBoxIcon from "@mui/icons-material/AddBox";
 import KeyboardIcon from "@mui/icons-material/Keyboard";
 import HistoryIcon from "@mui/icons-material/History";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import CheckIcon from "@mui/icons-material/Check";
+import SignalCellularAltIcon from "@mui/icons-material/SignalCellularAlt";
+import SecurityIcon from "@mui/icons-material/Security";
+import LockIcon from "@mui/icons-material/Lock";
 
 export const Home = () => {
   const navigate = useNavigate();
@@ -23,6 +30,7 @@ export const Home = () => {
   const [errorMsg, setErrorMsg] = useState("");
   const [loading, setLoading] = useState(false);
   const [recentMeetings, setRecentMeetings] = useState([]);
+  const [copiedCode, setCopiedCode] = useState(null);
 
   useEffect(() => {
     const fetchRecent = async () => {
@@ -92,100 +100,177 @@ export const Home = () => {
     }
   };
 
+  const handleCopyCode = (code, e) => {
+    e.stopPropagation();
+    navigator.clipboard.writeText(code);
+    setCopiedCode(code);
+    setTimeout(() => setCopiedCode(null), 2000);
+  };
+
+  const getInitials = (name) => {
+    if (!name) return "U";
+    return name
+      .split(" ")
+      .map((p) => p[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
   return (
-    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "var(--bg-dark)" }}>
+    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "var(--canvas)" }}>
       <Navbar />
 
-      <main style={{ flex: 1, padding: "var(--space-xl) var(--space-lg)", maxWidth: "1200px", margin: "0 auto", width: "100%" }}>
-        {/* Welcome Header */}
-        <div style={{ marginBottom: "var(--space-xl)" }} className="animate-entrance">
-          <Badge variant="cyan" style={{ marginBottom: "var(--space-sm)" }}>
-            LOBBY DASHBOARD
-          </Badge>
-          <h1 style={{ fontSize: "32px", fontWeight: "800", letterSpacing: "-0.5px" }}>
-            Welcome back, {userData?.name || "Participant"}! 👋
-          </h1>
-          <p style={{ color: "var(--text-secondary)", fontSize: "16px", marginTop: "var(--space-xs)" }}>
-            Start an instant meeting or join an ongoing call with your team.
-          </p>
+      <main style={{ flex: 1, padding: "32px 24px", maxWidth: "1080px", margin: "0 auto", width: "100%" }}>
+        {/* Welcome Header Banner */}
+        <div
+          style={{
+            background: "var(--surface-card)",
+            border: "var(--border-subtle)",
+            borderRadius: "var(--radius-lg)",
+            padding: "24px 28px",
+            marginBottom: "32px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            flexWrap: "wrap",
+            gap: "16px",
+          }}
+          className="animate-entrance"
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+            <div
+              style={{
+                width: "48px",
+                height: "48px",
+                borderRadius: "50%",
+                background: "var(--primary-blurple)",
+                color: "#ffffff",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontWeight: "700",
+                fontSize: "18px",
+                flexShrink: 0,
+              }}
+            >
+              {getInitials(userData?.name || userData?.username)}
+            </div>
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "2px" }}>
+                <span className="pulse-dot" />
+                <span style={{ fontSize: "12px", fontWeight: "600", color: "var(--accent-green)" }}>
+                  Online & Ready
+                </span>
+              </div>
+              <h1 style={{ fontSize: "22px", fontWeight: "700", letterSpacing: "-0.02em", color: "var(--text-white)" }}>
+                Welcome back, {userData?.name || userData?.username || "Participant"}
+              </h1>
+              <p style={{ color: "var(--text-secondary)", fontSize: "13px", marginTop: "1px" }}>
+                Start a private call or enter an existing meeting code.
+              </p>
+            </div>
+          </div>
+
+          <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+            <Badge variant="blurple">P2P Mesh Active</Badge>
+          </div>
         </div>
 
         {errorMsg && (
-          <div style={{ marginBottom: "var(--space-lg)" }}>
+          <div style={{ marginBottom: "24px" }}>
             <Alert variant="error" onClose={() => setErrorMsg("")}>
               {errorMsg}
             </Alert>
           </div>
         )}
 
-        {/* Action Cards Grid */}
+        {/* Primary Action Cards Grid */}
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
-            gap: "var(--space-lg)",
-            marginBottom: "48px",
+            gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+            gap: "20px",
+            marginBottom: "40px",
           }}
         >
           {/* Create Instant Meeting Card */}
-          <Card variant="glow" style={{ display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+          <Card
+            variant="surface"
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-between",
+              padding: "28px",
+            }}
+          >
             <div>
               <div
                 style={{
-                  width: "48px",
-                  height: "48px",
-                  borderRadius: "var(--radius-md)",
-                  background: "rgba(6, 182, 212, 0.15)",
-                  color: "var(--cyan-accent)",
+                  width: "44px",
+                  height: "44px",
+                  borderRadius: "var(--radius-sm)",
+                  background: "var(--surface-indigo)",
+                  color: "var(--primary-blurple)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  marginBottom: "var(--space-lg)",
+                  marginBottom: "16px",
+                  border: "var(--border-subtle)",
                 }}
               >
-                <AddBoxIcon style={{ fontSize: "28px" }} />
+                <AddBoxIcon style={{ fontSize: "24px" }} />
               </div>
-              <h2 style={{ fontSize: "20px", fontWeight: "700", marginBottom: "var(--space-sm)" }}>
-                Instant New Meeting
+              <h2 style={{ fontSize: "18px", fontWeight: "700", marginBottom: "6px", color: "var(--text-white)" }}>
+                Start Instant Meeting
               </h2>
-              <p style={{ color: "var(--text-secondary)", fontSize: "14px", lineHeight: "1.5", marginBottom: "var(--space-lg)" }}>
-                Create a secure WebRTC room in one click and invite participants with your unique meeting code.
+              <p style={{ color: "var(--text-secondary)", fontSize: "13px", lineHeight: "1.5", marginBottom: "24px" }}>
+                Create a private WebRTC meeting room instantly and invite participants with your generated code.
               </p>
             </div>
 
             <Button variant="primary" size="lg" fullWidth={true} onClick={handleCreateMeeting} loading={loading}>
-              <VideocamIcon />
-              <span>Start Instant Meeting</span>
+              <VideocamIcon style={{ fontSize: "18px" }} />
+              <span>New Meeting</span>
             </Button>
           </Card>
 
           {/* Join Meeting Card */}
-          <Card variant="glass" style={{ display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+          <Card
+            variant="surface"
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-between",
+              padding: "28px",
+            }}
+          >
             <div>
               <div
                 style={{
-                  width: "48px",
-                  height: "48px",
-                  borderRadius: "var(--radius-md)",
-                  background: "rgba(139, 92, 246, 0.15)",
-                  color: "var(--violet-accent)",
+                  width: "44px",
+                  height: "44px",
+                  borderRadius: "var(--radius-sm)",
+                  background: "var(--surface-indigo)",
+                  color: "var(--accent-cyan)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  marginBottom: "var(--space-lg)",
+                  marginBottom: "16px",
+                  border: "var(--border-subtle)",
                 }}
               >
-                <KeyboardIcon style={{ fontSize: "28px" }} />
+                <KeyboardIcon style={{ fontSize: "24px" }} />
               </div>
-              <h2 style={{ fontSize: "20px", fontWeight: "700", marginBottom: "var(--space-sm)" }}>
-                Join Existing Meeting
+              <h2 style={{ fontSize: "18px", fontWeight: "700", marginBottom: "6px", color: "var(--text-white)" }}>
+                Join with Code
               </h2>
-              <p style={{ color: "var(--text-secondary)", fontSize: "14px", lineHeight: "1.5", marginBottom: "var(--space-md)" }}>
-                Enter a 7-character room code to enter an active video call.
+              <p style={{ color: "var(--text-secondary)", fontSize: "13px", lineHeight: "1.5", marginBottom: "16px" }}>
+                Enter an invite code or link to enter an active call.
               </p>
             </div>
 
-            <form onSubmit={handleJoinMeeting} style={{ display: "flex", flexDirection: "column", gap: "var(--space-sm)" }}>
+            <form onSubmit={handleJoinMeeting} style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
               <Input
                 icon={KeyboardIcon}
                 placeholder="e.g. ABC123X"
@@ -194,58 +279,124 @@ export const Home = () => {
                 maxLength={20}
               />
               <Button type="submit" variant="secondary" size="lg" fullWidth={true} loading={loading}>
-                <span>Join Meeting</span>
-                <ArrowForwardIcon style={{ fontSize: "18px" }} />
+                <span>Join Call</span>
+                <ArrowForwardIcon style={{ fontSize: "16px" }} />
               </Button>
             </form>
           </Card>
         </div>
 
         {/* Recent Activity Section */}
-        {recentMeetings.length > 0 && (
-          <div>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "var(--space-md)" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                <HistoryIcon style={{ color: "var(--cyan-accent)", fontSize: "22px" }} />
-                <h3 style={{ fontSize: "18px", fontWeight: "700" }}>Recent Activity</h3>
-              </div>
-              <Button variant="ghost" size="sm" onClick={() => navigate("/history")}>
-                View All History →
-              </Button>
+        <div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <HistoryIcon style={{ fontSize: "20px", color: "var(--text-secondary)" }} />
+              <h3 style={{ fontSize: "16px", fontWeight: "700", color: "var(--text-white)" }}>Recent Meetings</h3>
             </div>
+            <Button variant="ghost" size="sm" onClick={() => navigate("/history")}>
+              View All History →
+            </Button>
+          </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "var(--space-md)" }}>
+          {recentMeetings.length === 0 ? (
+            <Card variant="surface" style={{ padding: "40px 20px", textAlign: "center" }}>
+              <div
+                style={{
+                  width: "48px",
+                  height: "48px",
+                  borderRadius: "50%",
+                  background: "var(--surface-indigo)",
+                  color: "var(--text-muted)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  margin: "0 auto 12px auto",
+                }}
+              >
+                <VideocamIcon style={{ fontSize: "24px" }} />
+              </div>
+              <h4 style={{ fontSize: "16px", fontWeight: "600", marginBottom: "4px", color: "var(--text-white)" }}>No Recent Meetings Yet</h4>
+              <p style={{ color: "var(--text-secondary)", fontSize: "13px", marginBottom: "16px" }}>
+                Start a meeting to generate your first private room.
+              </p>
+              <Button variant="primary" size="sm" onClick={handleCreateMeeting}>
+                Start a Meeting
+              </Button>
+            </Card>
+          ) : (
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: "12px" }}>
               {recentMeetings.map((item, index) => (
                 <Card
                   key={item._id || index}
                   variant="surface"
+                  interactive={true}
                   style={{
-                    padding: "var(--space-md) 20px",
+                    padding: "16px",
                     display: "flex",
-                    alignItems: "center",
+                    flexDirection: "column",
                     justifyContent: "space-between",
-                    cursor: "pointer",
+                    gap: "12px",
                   }}
                   onClick={() => {
                     setMeetingCode(item.meetingCode);
                   }}
                 >
-                  <div>
-                    <span style={{ fontSize: "16px", fontWeight: "700", fontFamily: "var(--font-mono)", color: "var(--cyan-accent)" }}>
-                      {item.meetingCode}
-                    </span>
-                    <p style={{ fontSize: "12px", color: "var(--text-muted)", marginTop: "var(--space-xs)" }}>
-                      {item.date ? new Date(item.date).toLocaleDateString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "Recent"}
-                    </p>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                    <div>
+                      <span
+                        style={{
+                          fontSize: "16px",
+                          fontWeight: "700",
+                          fontFamily: "var(--font-mono)",
+                          color: "var(--primary-blurple)",
+                        }}
+                      >
+                        {item.meetingCode}
+                      </span>
+                      <p style={{ fontSize: "12px", color: "var(--text-muted)", marginTop: "2px" }}>
+                        {item.date
+                          ? new Date(item.date).toLocaleDateString(undefined, {
+                              month: "short",
+                              day: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })
+                          : "Recent"}
+                      </p>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={(e) => handleCopyCode(item.meetingCode, e)}
+                      style={{
+                        background: "var(--surface-indigo)",
+                        border: "var(--border-subtle)",
+                        borderRadius: "var(--radius-xs)",
+                        padding: "5px",
+                        color: copiedCode === item.meetingCode ? "var(--accent-green)" : "var(--text-muted)",
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                      }}
+                      title="Copy Code"
+                    >
+                      {copiedCode === item.meetingCode ? <CheckIcon style={{ fontSize: "14px" }} /> : <ContentCopyIcon style={{ fontSize: "14px" }} />}
+                    </button>
                   </div>
-                  <Badge variant={item.status === "ended" ? "error" : "success"}>
-                    {item.status === "ended" ? "Ended" : "Active"}
-                  </Badge>
+
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <Badge variant={item.status === "ended" ? "error" : "green"}>
+                      {item.status === "ended" ? "Ended" : "Active"}
+                    </Badge>
+                    <span style={{ fontSize: "12px", color: "var(--primary-blurple)", fontWeight: "600" }}>
+                      Load Code ↗
+                    </span>
+                  </div>
                 </Card>
               ))}
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </main>
     </div>
   );

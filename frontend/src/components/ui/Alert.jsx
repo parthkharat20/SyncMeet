@@ -1,4 +1,9 @@
 import React from "react";
+import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
+import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
+import WarningAmberIcon from "@mui/icons-material/WarningAmber";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+import CloseIcon from "@mui/icons-material/Close";
 
 export const Alert = ({
   children,
@@ -7,28 +12,46 @@ export const Alert = ({
   className = "",
   style = {},
 }) => {
-  const variantStyles = {
-    error: {
-      background: "var(--color-error-bg)",
-      border: "1px solid rgba(244, 63, 94, 0.3)",
-      color: "#FDA4AF",
-    },
-    success: {
-      background: "var(--color-success-bg)",
-      border: "1px solid rgba(16, 185, 129, 0.3)",
-      color: "#6EE7B7",
-    },
-    warning: {
-      background: "var(--color-warning-bg)",
-      border: "1px solid rgba(245, 158, 11, 0.3)",
-      color: "#FDE68A",
-    },
-    info: {
-      background: "var(--color-info-bg)",
-      border: "1px solid rgba(56, 189, 248, 0.3)",
-      color: "#7DD3FC",
-    },
-  }[variant];
+  const getVariantConfig = () => {
+    switch (variant) {
+      case "success":
+        return {
+          icon: CheckCircleOutlineIcon,
+          background: "rgba(53, 237, 126, 0.12)",
+          border: "1px solid rgba(53, 237, 126, 0.35)",
+          color: "var(--accent-green)",
+          textColor: "#e6ffed",
+        };
+      case "warning":
+        return {
+          icon: WarningAmberIcon,
+          background: "rgba(240, 178, 50, 0.12)",
+          border: "1px solid rgba(240, 178, 50, 0.35)",
+          color: "var(--color-warning)",
+          textColor: "#fff9e6",
+        };
+      case "info":
+        return {
+          icon: InfoOutlinedIcon,
+          background: "rgba(0, 176, 244, 0.12)",
+          border: "1px solid rgba(0, 176, 244, 0.35)",
+          color: "var(--accent-cyan)",
+          textColor: "#e6f8ff",
+        };
+      case "error":
+      default:
+        return {
+          icon: ErrorOutlineIcon,
+          background: "rgba(242, 63, 67, 0.12)",
+          border: "1px solid rgba(242, 63, 67, 0.35)",
+          color: "var(--color-error)",
+          textColor: "#ffebee",
+        };
+    }
+  };
+
+  const config = getVariantConfig();
+  const IconComponent = config.icon;
 
   return (
     <div
@@ -37,32 +60,45 @@ export const Alert = ({
         alignItems: "center",
         justifyContent: "space-between",
         padding: "12px 16px",
-        borderRadius: "var(--radius-md)",
+        borderRadius: "var(--radius-sm)",
         fontSize: "14px",
         fontWeight: "500",
         lineHeight: "1.4",
         width: "100%",
-        ...variantStyles,
+        background: config.background,
+        border: config.border,
+        color: config.textColor,
+        boxShadow: "var(--shadow-elevation-1)",
         ...style,
       }}
-      className={className}
+      className={`animate-entrance ${className}`}
     >
-      <span>{children}</span>
+      <div style={{ display: "flex", alignItems: "center", gap: "10px", flex: 1 }}>
+        <IconComponent style={{ color: config.color, fontSize: "20px", flexShrink: 0 }} />
+        <span>{children}</span>
+      </div>
+
       {onClose && (
         <button
+          type="button"
           onClick={onClose}
           style={{
             background: "none",
             border: "none",
-            color: "currentColor",
+            color: "var(--text-muted)",
             cursor: "pointer",
-            fontSize: "16px",
-            lineHeight: "1",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "4px",
+            borderRadius: "4px",
             marginLeft: "12px",
-            opacity: 0.8,
+            transition: "color var(--dur-fast)",
           }}
+          onMouseEnter={(e) => (e.currentTarget.style.color = "var(--text-white)")}
+          onMouseLeave={(e) => (e.currentTarget.style.color = "var(--text-muted)")}
         >
-          ✕
+          <CloseIcon style={{ fontSize: "16px" }} />
         </button>
       )}
     </div>

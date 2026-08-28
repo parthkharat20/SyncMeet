@@ -30,7 +30,7 @@ export const LoginForm = ({ onSubmit, loading, externalError }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
+    <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
       {externalError && <Alert variant="error">{externalError}</Alert>}
 
       <Input

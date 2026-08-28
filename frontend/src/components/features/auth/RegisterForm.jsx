@@ -40,7 +40,7 @@ export const RegisterForm = ({ onSubmit, loading, externalError }) => {
       <Input
         label="Full Name"
         icon={BadgeIcon}
-        placeholder="e.g. Parth Kharat"
+        placeholder="e.g. Alex Morgan"
         value={name}
         onChange={(e) => {
           setName(e.target.value);
@@ -69,7 +69,7 @@ export const RegisterForm = ({ onSubmit, loading, externalError }) => {
           icon={LockIcon}
           type="password"
           passwordToggle={true}
-          placeholder="Create a strong password"
+          placeholder="Create a secure password"
           value={password}
           onChange={(e) => {
             setPassword(e.target.value);
@@ -81,7 +81,7 @@ export const RegisterForm = ({ onSubmit, loading, externalError }) => {
         <PasswordStrengthBar password={password} />
       </div>
 
-      <Button type="submit" variant="primary" size="lg" fullWidth={true} loading={loading}>
+      <Button type="submit" variant="green" size="lg" fullWidth={true} loading={loading}>
         Create Free Account
       </Button>
     </form>
