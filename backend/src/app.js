@@ -13,7 +13,7 @@ dotenv.config();
 const app = express();
 const server = createServer(app);
 
-// Enable trust proxy so Express rate limiter reads real client IP behind Nginx / Render reverse proxy
+// Enable trust proxy so Express rate limiter reads real client IP behind Nginx / Render / Railway reverse proxy
 app.set("trust proxy", 1);
 
 connectToSocket(server);
@@ -29,7 +29,12 @@ app.use(helmet({
 app.use(cors({
   origin: (origin, callback) => {
     if (!origin) return callback(null, true);
-    if (origin === clientOrigin || origin.startsWith("http://localhost:") || origin.endsWith(".vercel.app")) {
+    if (
+      origin === clientOrigin ||
+      origin.startsWith("http://localhost:") ||
+      origin.endsWith(".vercel.app") ||
+      origin.endsWith(".railway.app")
+    ) {
       return callback(null, true);
     }
     return callback(null, true);
@@ -40,20 +45,45 @@ app.use(cors({
 app.use(express.json({ limit: "40kb" }));
 app.use(express.urlencoded({ limit: "40kb", extended: true }));
 
-// Health Check endpoint for cloud deployment platforms (Render, Railway, Fly, AWS)
+// Health Check endpoint for cloud deployment platforms
 app.get("/health", (req, res) => {
-  res.status(200).json({ status: "healthy", timestamp: new Date().toISOString() });
+  res.status(200).json({
+    status: "healthy",
+    dbState: mongoose.connection.readyState,
+    timestamp: new Date().toISOString(),
+  });
 });
 
 app.use("/api/users", userRoutes);
 
 const PORT = process.env.PORT || 8000;
-const MONGO_URI = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/syncmeet";
-const LOCAL_MONGO_URI = "mongodb://127.0.0.1:27017/syncmeet";
+
+export const getMongoUri = () => {
+  if (process.env.MONGO_URI && !process.env.MONGO_URI.startsWith("${{") && process.env.MONGO_URI.startsWith("mongodb")) {
+    return process.env.MONGO_URI;
+  }
+  if (process.env.MONGO_URL && process.env.MONGO_URL.startsWith("mongodb")) {
+    return process.env.MONGO_URL;
+  }
+  if (process.env.MONGO_PRIVATE_URL && process.env.MONGO_PRIVATE_URL.startsWith("mongodb")) {
+    return process.env.MONGO_PRIVATE_URL;
+  }
+  if (process.env.MONGODB_URI && process.env.MONGODB_URI.startsWith("mongodb")) {
+    return process.env.MONGODB_URI;
+  }
+  if (process.env.MONGOHOST && process.env.MONGOPORT) {
+    const user = process.env.MONGOUSER || process.env.MONGO_INITDB_ROOT_USERNAME || "";
+    const pass = process.env.MONGOPASSWORD || process.env.MONGO_INITDB_ROOT_PASSWORD || "";
+    const auth = user && pass ? `${encodeURIComponent(user)}:${encodeURIComponent(pass)}@` : "";
+    return `mongodb://${auth}${process.env.MONGOHOST}:${process.env.MONGOPORT}/syncmeet?authSource=admin`;
+  }
+  return "mongodb://127.0.0.1:27017/syncmeet";
+};
 
 // Reconcile any meetings left in 'active' state due to server crashes
 export const reconcileStaleActiveMeetings = async () => {
   try {
+    if (mongoose.connection.readyState !== 1) return 0;
     const result = await Meeting.updateMany(
       { status: "active" },
       { $set: { status: "ended", endTime: new Date() } }
@@ -66,20 +96,24 @@ export const reconcileStaleActiveMeetings = async () => {
   }
 };
 
-const start = async () => {
+const connectWithRetry = async () => {
+  const uri = getMongoUri();
+  console.log(`[DB] Attempting MongoDB connection to configured source...`);
   try {
-    await mongoose.connect(MONGO_URI, { serverSelectionTimeoutMS: 2500 });
-    console.log("MongoDB connected successfully (Atlas)");
+    await mongoose.connect(uri, {
+      serverSelectionTimeoutMS: 8000,
+      connectTimeoutMS: 8000,
+    });
+    console.log("MongoDB connected successfully");
     await reconcileStaleActiveMeetings();
-  } catch (error) {
-    try {
-      await mongoose.connect(LOCAL_MONGO_URI, { serverSelectionTimeoutMS: 2000 });
-      console.log("MongoDB connected successfully (Local Fallback)");
-      await reconcileStaleActiveMeetings();
-    } catch (localErr) {
-      console.warn("MongoDB connection warning (proceeding without DB):", error.message);
-    }
+  } catch (err) {
+    console.warn(`[DB WARNING] Connection error: ${err.message}. Retrying in 5 seconds...`);
+    setTimeout(connectWithRetry, 5000);
   }
+};
+
+const start = async () => {
+  await connectWithRetry();
 
   server.listen(PORT, () => {
     console.log(`SyncMeet Server running on port ${PORT}`);

@@ -33,7 +33,19 @@ export const connectToSocket = (server) => {
 
   const io = new Server(server, {
     cors: {
-      origin: [allowedOrigin, "http://localhost:5173", "http://localhost:3000"],
+      origin: (origin, callback) => {
+        if (!origin) return callback(null, true);
+        if (
+          origin === allowedOrigin ||
+          allowedOrigin === "*" ||
+          origin.startsWith("http://localhost:") ||
+          origin.endsWith(".vercel.app") ||
+          origin.endsWith(".railway.app")
+        ) {
+          return callback(null, true);
+        }
+        return callback(null, true);
+      },
       methods: ["GET", "POST"],
       credentials: true,
     },

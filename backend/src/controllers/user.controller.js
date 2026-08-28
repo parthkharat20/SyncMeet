@@ -222,6 +222,11 @@ const checkMeetingStatus = async (req, res) => {
       return res.status(400).json({ message: "Meeting code is required" });
     }
 
+    // If database is not ready, do not block users from joining peer-to-peer calls
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(200).json({ ended: false });
+    }
+
     const meeting = await Meeting.findOne({ meetingCode: code.trim().toUpperCase() }).sort({ date: -1 });
     if (meeting && meeting.status === "ended") {
       return res.status(200).json({ ended: true, message: "This meeting has ended." });
@@ -229,7 +234,7 @@ const checkMeetingStatus = async (req, res) => {
 
     return res.status(200).json({ ended: false });
   } catch (error) {
-    return res.status(500).json({ message: "Error checking meeting status", error: error.message });
+    return res.status(200).json({ ended: false });
   }
 };
 
