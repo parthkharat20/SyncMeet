@@ -707,12 +707,19 @@ export default function VideoMeetComponent() {
   const totalParticipants = videos.length + 1;
   const gridTemplateColumns =
     totalParticipants === 1
-      ? "minmax(320px, 860px)"
+      ? "minmax(320px, 980px)"
       : totalParticipants === 2
       ? "repeat(2, minmax(280px, 1fr))"
-      : totalParticipants <= 4
-      ? "repeat(2, minmax(280px, 1fr))"
+      : totalParticipants === 3
+      ? "repeat(3, minmax(240px, 1fr))"
+      : totalParticipants === 4
+      ? "repeat(2, minmax(260px, 1fr))"
       : "repeat(3, minmax(240px, 1fr))";
+
+  const gridTemplateRows =
+    totalParticipants <= 3
+      ? "1fr"
+      : "repeat(2, 1fr)";
 
   return (
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "var(--canvas-dark)" }}>
@@ -936,7 +943,7 @@ export default function VideoMeetComponent() {
           <div className={styles.mainStage}>
             <div className={styles.videoGridWrapper}>
               {/* Dynamic Participant Video Grid */}
-              <div className={styles.videoGrid} style={{ gridTemplateColumns }}>
+              <div className={styles.videoGrid} style={{ gridTemplateColumns, gridTemplateRows }}>
                 {/* Local Participant Tile */}
                 <div className={`${styles.videoTile} ${audio ? styles.videoTileSpeaking : ""}`}>
                   {video ? (

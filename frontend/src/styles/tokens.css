@@ -1,5 +1,5 @@
 :root {
-  /* ─── 80-90% Neutral Dark Surface Scale ─── */
+  /* ─── Base & Surface Scale ─── */
   --canvas: #090a10;
   --canvas-dark: #06070a;
   --bg-main: #090a10;
@@ -10,7 +10,7 @@
   --surface-indigo: #151827;
   --surface-indigo-hover: #1c2035;
   --surface-onyx: #181b2a;
-  --surface-glass: rgba(9, 10, 16, 0.82);
+  --surface-glass: rgba(9, 10, 16, 0.85);
   --surface-glass-heavy: rgba(9, 10, 16, 0.95);
   --surface-black: #000000;
 
@@ -19,13 +19,13 @@
   --surface-2: #151827;
   --surface-3: #1c2035;
 
-  /* ─── 10-20% Intentional Brand Accents ─── */
+  /* ─── Brand & Semantic Colors ─── */
   --primary-blurple: #5865f2;
   --blurple-hover: #4752c4;
   --blurple-active: #3c45a5;
   --on-primary: #ffffff;
 
-  /* Semantic-only Indicators */
+  /* Semantic Indicators */
   --accent-green: #22c55e;
   --green-hover: #16a34a;
   --color-success: #22c55e;
@@ -61,21 +61,21 @@
   --ink: #ffffff;
   --ink-dark: #030712;
 
-  /* ─── Subtle Atmosphere (Restrained) ─── */
+  /* ─── Subtle Atmosphere ─── */
   --brand-gradient: linear-gradient(135deg, #5865f2 0%, #7289da 100%);
   --brand-gradient-subtle: linear-gradient(135deg, rgba(88, 101, 242, 0.12) 0%, rgba(114, 137, 218, 0.06) 100%);
   --brand-mesh: radial-gradient(ellipse at 50% 0%, rgba(88, 101, 242, 0.12) 0%, transparent 65%),
                 radial-gradient(ellipse at 50% 100%, rgba(15, 17, 26, 0.8) 0%, transparent 60%);
 
-  /* ─── Refined Shadows (No Excessive Glows) ─── */
+  /* ─── Refined Shadows & Glows ─── */
   --glow-blurple: 0 0 16px rgba(88, 101, 242, 0.22);
   --shadow-elevation-1: 0 2px 8px rgba(0, 0, 0, 0.3);
   --shadow-elevation-2: 0 8px 24px rgba(0, 0, 0, 0.45);
   --shadow-floating: 0 12px 36px rgba(0, 0, 0, 0.6), 0 0 1px rgba(255, 255, 255, 0.12);
 
-  /* ─── Precise Hairline Borders ─── */
-  --border-subtle: 1px solid rgba(255, 255, 255, 0.07);
-  --border-medium: 1px solid rgba(255, 255, 255, 0.12);
+  /* ─── Hairline Borders ─── */
+  --border-subtle: 1px solid rgba(255, 255, 255, 0.08);
+  --border-medium: 1px solid rgba(255, 255, 255, 0.14);
   --border-blurple: 1px solid rgba(88, 101, 242, 0.35);
   --border-active: 1px solid var(--primary-blurple);
   --border-cyan: 1px solid rgba(0, 176, 244, 0.3);

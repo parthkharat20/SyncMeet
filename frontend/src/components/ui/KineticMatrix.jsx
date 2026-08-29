@@ -1,19 +1,19 @@
 import React, { useEffect, useRef } from "react";
 
 /**
- * KineticMatrix — Immersive 21st.dev-Style P2P Mesh Canvas
+ * KineticMatrix — Premium 21st.dev-Style P2P Mesh Canvas
  * Visualizes real-time WebRTC peer mesh connectivity, animated topology, and node synchronization.
- * Features traveling signal pulses, pointer interaction, IntersectionObserver pause, and reduced-motion support.
+ * Clearly visible Blurple and cool-indigo signal pulses, pointer interaction, IntersectionObserver pause, and reduced-motion support.
  */
 export const KineticMatrix = ({
   className = "",
   style = {},
-  nodeSpacing = 38,
-  nodeColor = "rgba(180, 190, 220, 0.45)",
-  activeNodeColor = "rgba(88, 101, 242, 0.95)",
-  lineColor = "rgba(88, 101, 242, 0.16)",
-  pulseLineColor = "rgba(114, 137, 218, 0.6)",
-  maxDistance = 72,
+  nodeSpacing = 34,
+  nodeColor = "rgba(160, 175, 215, 0.65)",
+  activeNodeColor = "rgba(88, 101, 242, 1.0)",
+  lineColor = "rgba(88, 101, 242, 0.28)",
+  pulseLineColor = "rgba(140, 165, 255, 0.95)",
+  maxDistance = 70,
 }) => {
   const canvasRef = useRef(null);
 
@@ -47,7 +47,7 @@ export const KineticMatrix = ({
     let pulses = [];
 
     const isMobile = window.innerWidth < 768;
-    const spacing = isMobile ? Math.max(nodeSpacing * 1.5, 52) : nodeSpacing;
+    const spacing = isMobile ? Math.max(nodeSpacing * 1.4, 48) : nodeSpacing;
     const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
 
     const resize = () => {
@@ -76,7 +76,7 @@ export const KineticMatrix = ({
             vx: 0,
             vy: 0,
             pulsePhase: Math.random() * Math.PI * 2,
-            baseRadius: isMobile ? 1.5 : 2.0,
+            baseRadius: isMobile ? 1.8 : 2.2,
             highlightTimer: 0,
           });
         }
@@ -84,13 +84,13 @@ export const KineticMatrix = ({
 
       // Initialize periodic packet pulses along connections
       pulses = [];
-      const pulseCount = isMobile ? 4 : 10;
+      const pulseCount = isMobile ? 8 : 18;
       for (let p = 0; p < pulseCount; p++) {
         const fromIdx = Math.floor(Math.random() * nodes.length);
         pulses.push({
           fromIndex: fromIdx,
           progress: Math.random(),
-          speed: 0.3 + Math.random() * 0.4,
+          speed: 0.35 + Math.random() * 0.45,
           dir: Math.random() > 0.5 ? "down" : "right",
         });
       }
@@ -135,24 +135,24 @@ export const KineticMatrix = ({
       lastTime = time;
 
       // Smooth pointer physics
-      pointer.x += (pointer.targetX - pointer.x) * 0.12;
-      pointer.y += (pointer.targetY - pointer.y) * 0.12;
+      pointer.x += (pointer.targetX - pointer.x) * 0.14;
+      pointer.y += (pointer.targetY - pointer.y) * 0.14;
 
       ctx.clearRect(0, 0, width, height);
 
       const timeSec = time * 0.001;
-      const hoverRadius = isMobile ? 110 : 160;
+      const hoverRadius = isMobile ? 120 : 180;
 
       // ─── 1. Update & Draw Grid Connections ───
       ctx.strokeStyle = lineColor;
-      ctx.lineWidth = 0.9;
+      ctx.lineWidth = 1.1;
 
       for (let i = 0; i < nodes.length; i++) {
         const node = nodes[i];
 
         if (!prefersReducedMotion) {
-          // Ambient breathing wave
-          const wave = Math.sin(timeSec * 1.8 + node.pulsePhase) * 0.5;
+          // Ambient gentle wave
+          const wave = Math.sin(timeSec * 2.0 + node.pulsePhase) * 0.8;
 
           // Pointer interaction physics (repel + spring back)
           const dx = node.x - pointer.x;
@@ -160,7 +160,7 @@ export const KineticMatrix = ({
           const dist = Math.sqrt(dx * dx + dy * dy);
 
           if (pointer.active && dist < hoverRadius && dist > 0) {
-            const force = (1 - dist / hoverRadius) * 26;
+            const force = (1 - dist / hoverRadius) * 32;
             const angle = Math.atan2(dy, dx);
             node.vx += Math.cos(angle) * force * delta * 60;
             node.vy += Math.sin(angle) * force * delta * 60;
@@ -170,12 +170,12 @@ export const KineticMatrix = ({
           // Spring return to original grid coordinate
           const ox = node.originX - node.x;
           const oy = node.originY - node.y;
-          node.vx += ox * 0.09;
-          node.vy += oy * 0.09;
+          node.vx += ox * 0.1;
+          node.vy += oy * 0.1;
 
           // Damping
-          node.vx *= 0.8;
-          node.vy *= 0.8;
+          node.vx *= 0.82;
+          node.vy *= 0.82;
 
           node.x += node.vx;
           node.y += node.vy;
@@ -212,6 +212,9 @@ export const KineticMatrix = ({
       // ─── 2. Update & Draw Traveling Signal Pulses (WebRTC Packet Simulation) ───
       if (!prefersReducedMotion) {
         ctx.fillStyle = pulseLineColor;
+        ctx.shadowColor = "rgba(88, 101, 242, 0.8)";
+        ctx.shadowBlur = 6;
+
         for (let p = 0; p < pulses.length; p++) {
           const pulse = pulses[p];
           pulse.progress += pulse.speed * delta;
@@ -237,10 +240,11 @@ export const KineticMatrix = ({
             const py = fromNode.y + (targetNode.y - fromNode.y) * pulse.progress;
 
             ctx.beginPath();
-            ctx.arc(px, py, 2.0, 0, Math.PI * 2);
+            ctx.arc(px, py, 2.5, 0, Math.PI * 2);
             ctx.fill();
           }
         }
+        ctx.shadowBlur = 0;
       }
 
       // ─── 3. Draw Nodes with Depth and Glow ───
@@ -253,17 +257,17 @@ export const KineticMatrix = ({
 
         ctx.beginPath();
         const r = isNearPointer
-          ? node.baseRadius * 1.8
+          ? node.baseRadius * 2.0
           : node.highlightTimer > 0
-          ? node.baseRadius * 1.4
+          ? node.baseRadius * 1.5
           : node.baseRadius;
 
         ctx.arc(node.x, node.y, r, 0, Math.PI * 2);
 
         if (isNearPointer || node.highlightTimer > 0) {
           ctx.fillStyle = activeNodeColor;
-          ctx.shadowColor = "rgba(88, 101, 242, 0.6)";
-          ctx.shadowBlur = 8;
+          ctx.shadowColor = "rgba(88, 101, 242, 0.85)";
+          ctx.shadowBlur = 10;
         } else {
           ctx.fillStyle = nodeColor;
           ctx.shadowBlur = 0;
