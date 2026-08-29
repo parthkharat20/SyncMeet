@@ -5,6 +5,7 @@ import Meeting from "../models/meeting.model.js";
 let connections = {};
 let messages = {};
 let timeOnline = {};
+let participantData = {};
 
 const MAX_MESSAGES_PER_ROOM = 100;
 const MAX_MESSAGE_LENGTH = 1000;
@@ -86,7 +87,7 @@ export const connectToSocket = (server) => {
   io.on("connection", (socket) => {
     console.log("Socket connected:", socket.id, socket.user ? `(User: ${socket.user.username})` : "(Guest)");
 
-    socket.on("join-call", async (rawPath) => {
+    socket.on("join-call", async (rawPath, customDisplayName) => {
       const roomCode = normalizeRoomCode(rawPath);
       socket.roomCode = roomCode;
 
@@ -108,9 +109,25 @@ export const connectToSocket = (server) => {
         connections[roomCode].push(socket.id);
       }
 
+      const displayName = (typeof customDisplayName === "string" && customDisplayName.trim())
+        ? customDisplayName.trim().slice(0, 50)
+        : (socket.user ? socket.user.name : `Guest-${socket.id.slice(0, 4)}`);
+
+      socket.displayName = displayName;
+
+      if (!participantData[roomCode]) {
+        participantData[roomCode] = {};
+      }
+      participantData[roomCode][socket.id] = {
+        name: displayName,
+        audio: true,
+        video: true,
+        socketId: socket.id,
+      };
+
       timeOnline[socket.id] = Date.now();
 
-      console.log(`[JOIN] Socket ${socket.id} joined room ${roomCode}. Total participants: ${connections[roomCode].length}`);
+      console.log(`[JOIN] Socket ${socket.id} (${displayName}) joined room ${roomCode}. Total participants: ${connections[roomCode].length}`);
 
       // Database Lifecycle Sync: Mark meeting active on database (date set ONLY on insert)
       if (socket.user) {
@@ -132,9 +149,14 @@ export const connectToSocket = (server) => {
         }
       }
 
-      // Notify all users in this room of updated participant list
+      // Notify all users in this room of updated participant list (with metadata)
       for (let a = 0; a < connections[roomCode].length; a++) {
-        io.to(connections[roomCode][a]).emit("user-joined", socket.id, connections[roomCode]);
+        io.to(connections[roomCode][a]).emit(
+          "user-joined",
+          socket.id,
+          connections[roomCode],
+          participantData[roomCode]
+        );
       }
 
       // Send existing messages to the newly joined socket
@@ -156,6 +178,26 @@ export const connectToSocket = (server) => {
       }
     });
 
+    socket.on("update-media-state", (mediaState) => {
+      if (!mediaState || typeof mediaState !== "object") return;
+      const roomCode = socket.roomCode;
+      if (roomCode && participantData[roomCode] && participantData[roomCode][socket.id]) {
+        if (typeof mediaState.audio === "boolean") participantData[roomCode][socket.id].audio = mediaState.audio;
+        if (typeof mediaState.video === "boolean") participantData[roomCode][socket.id].video = mediaState.video;
+
+        connections[roomCode].forEach((sId) => {
+          if (sId !== socket.id) {
+            io.to(sId).emit("peer-media-state", {
+              socketId: socket.id,
+              audio: participantData[roomCode][socket.id].audio,
+              video: participantData[roomCode][socket.id].video,
+              name: participantData[roomCode][socket.id].name,
+            });
+          }
+        });
+      }
+    });
+
     socket.on("chat-message", (data, sender) => {
       if (typeof data !== "string" || !data.trim()) return;
 
@@ -171,7 +213,7 @@ export const connectToSocket = (server) => {
         const sanitizedText = data.trim().slice(0, MAX_MESSAGE_LENGTH);
         const senderName = typeof sender === "string" && sender.trim()
           ? sender.trim().slice(0, 50)
-          : (socket.user ? socket.user.name : "Anonymous");
+          : (socket.displayName || (socket.user ? socket.user.name : "Anonymous"));
 
         const msgObj = {
           sender: senderName,
@@ -200,6 +242,9 @@ export const connectToSocket = (server) => {
       for (const [roomCode, roomSockets] of Object.entries(connections)) {
         if (roomSockets.includes(socket.id)) {
           connections[roomCode] = roomSockets.filter((id) => id !== socket.id);
+          if (participantData[roomCode]) {
+            delete participantData[roomCode][socket.id];
+          }
 
           console.log(`[LEAVE] Socket ${socket.id} left room ${roomCode}. Remaining count: ${connections[roomCode].length}`);
 
@@ -210,6 +255,7 @@ export const connectToSocket = (server) => {
           if (connections[roomCode].length === 0) {
             delete connections[roomCode];
             delete messages[roomCode];
+            delete participantData[roomCode];
             console.log(`[CLEANUP] Room ${roomCode} purged from memory.`);
 
             // Database Lifecycle Sync: Mark meeting status as ended in DB
