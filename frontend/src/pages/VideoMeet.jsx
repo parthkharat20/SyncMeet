@@ -12,7 +12,6 @@ import Badge from "../components/ui/Badge";
 import Input from "../components/ui/Input";
 import SyncMeetLogo from "../components/ui/SyncMeetLogo";
 import SpotlightCard from "../components/ui/SpotlightCard";
-import ImageStreamHero from "../components/ui/ImageStreamHero";
 import styles from "../styles/videoComponent.module.css";
 
 import VideocamIcon from "@mui/icons-material/Videocam";
@@ -724,29 +723,12 @@ export default function VideoMeetComponent() {
       : "repeat(2, 1fr)";
 
   return (
-    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "var(--canvas-dark)", position: "relative", overflow: "hidden" }}>
+    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "var(--canvas-dark)" }}>
       {/* ─── Pre-Call Lobby Screen ─── */}
       {askForUsername ? (
-        <div style={{ position: "relative", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+        <>
           <Navbar />
-
-          {/* 3D Perspective Stream Corridor in Lobby Background */}
-          <ImageStreamHero
-            opacity={0.55}
-            speed={24}
-            axis={48}
-            vignette={true}
-            style={{
-              position: "absolute",
-              inset: 0,
-              width: "100%",
-              height: "100%",
-              pointerEvents: "none",
-              zIndex: 0,
-            }}
-          />
-
-          <main className={styles.lobbyWrapper} style={{ position: "relative", zIndex: 10 }}>
+          <main className={styles.lobbyWrapper}>
             <SpotlightCard
               spotlightColor="rgba(88, 101, 242, 0.22)"
               borderColor="rgba(88, 101, 242, 0.45)"
@@ -845,7 +827,7 @@ export default function VideoMeetComponent() {
               </div>
             </SpotlightCard>
           </main>
-        </div>
+        </>
       ) : (
         /* ─── Active Video Meeting Room (Full Viewport Stage) ─── */
         <div className={styles.meetVideoContainer}>

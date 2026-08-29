@@ -4,7 +4,6 @@ import { useAuth } from "../hooks/useAuth";
 import withAuth from "../utils/withAuth";
 import Navbar from "../components/layout/Navbar";
 import SpotlightCard from "../components/ui/SpotlightCard";
-import ImageStreamHero from "../components/ui/ImageStreamHero";
 import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
 import Badge from "../components/ui/Badge";
@@ -63,26 +62,10 @@ export const History = () => {
   };
 
   return (
-    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "var(--canvas)", position: "relative", overflow: "hidden" }}>
+    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "var(--canvas)" }}>
       <Navbar />
 
-      {/* 3D Perspective Stream Corridor in Background */}
-      <ImageStreamHero
-        opacity={0.5}
-        speed={24}
-        axis={45}
-        vignette={true}
-        style={{
-          position: "absolute",
-          inset: 0,
-          width: "100%",
-          height: "100%",
-          pointerEvents: "none",
-          zIndex: 0,
-        }}
-      />
-
-      <main style={{ flex: 1, padding: "32px 24px", maxWidth: "960px", margin: "0 auto", width: "100%", position: "relative", zIndex: 10 }}>
+      <main style={{ flex: 1, padding: "32px 24px", maxWidth: "960px", margin: "0 auto", width: "100%" }}>
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "28px", flexWrap: "wrap", gap: "14px" }} className="animate-entrance">
           <div>
