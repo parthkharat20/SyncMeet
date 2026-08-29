@@ -7,6 +7,7 @@ import SpotlightCard from "../components/ui/SpotlightCard";
 import Alert from "../components/ui/Alert";
 import Badge from "../components/ui/Badge";
 import KineticMatrix from "../components/ui/KineticMatrix";
+import ImageStreamHero from "../components/ui/ImageStreamHero";
 import LoginForm from "../components/features/auth/LoginForm";
 import RegisterForm from "../components/features/auth/RegisterForm";
 
@@ -94,17 +95,19 @@ export const Auth = () => {
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "var(--canvas)", position: "relative", overflow: "hidden" }}>
       <Navbar />
 
-      {/* Background KineticMatrix Mesh */}
-      <KineticMatrix nodeSpacing={44} maxDistance={65} />
-
-      {/* Subtle Radial Vignette */}
-      <div
+      {/* 3D Perspective Stream Corridor in Background */}
+      <ImageStreamHero
+        opacity={0.6}
+        speed={22}
+        axis={50}
+        vignette={true}
         style={{
           position: "absolute",
           inset: 0,
-          background: "radial-gradient(ellipse at 50% 40%, rgba(9, 10, 16, 0.45) 0%, rgba(9, 10, 16, 0.95) 85%)",
+          width: "100%",
+          height: "100%",
           pointerEvents: "none",
-          zIndex: 1,
+          zIndex: 0,
         }}
       />
 
@@ -116,7 +119,7 @@ export const Auth = () => {
           justifyContent: "center",
           padding: "40px 24px",
           position: "relative",
-          zIndex: 2,
+          zIndex: 10,
           maxWidth: "1080px",
           margin: "0 auto",
           width: "100%",

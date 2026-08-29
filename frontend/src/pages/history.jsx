@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import withAuth from "../utils/withAuth";
 import Navbar from "../components/layout/Navbar";
+import SpotlightCard from "../components/ui/SpotlightCard";
+import ImageStreamHero from "../components/ui/ImageStreamHero";
 import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
 import Badge from "../components/ui/Badge";
@@ -61,10 +63,26 @@ export const History = () => {
   };
 
   return (
-    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "var(--canvas)" }}>
+    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "var(--canvas)", position: "relative", overflow: "hidden" }}>
       <Navbar />
 
-      <main style={{ flex: 1, padding: "32px 24px", maxWidth: "960px", margin: "0 auto", width: "100%" }}>
+      {/* 3D Perspective Stream Corridor in Background */}
+      <ImageStreamHero
+        opacity={0.5}
+        speed={24}
+        axis={45}
+        vignette={true}
+        style={{
+          position: "absolute",
+          inset: 0,
+          width: "100%",
+          height: "100%",
+          pointerEvents: "none",
+          zIndex: 0,
+        }}
+      />
+
+      <main style={{ flex: 1, padding: "32px 24px", maxWidth: "960px", margin: "0 auto", width: "100%", position: "relative", zIndex: 10 }}>
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "28px", flexWrap: "wrap", gap: "14px" }} className="animate-entrance">
           <div>
@@ -83,6 +101,7 @@ export const History = () => {
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
+                  border: "1px solid rgba(255, 255, 255, 0.08)",
                 }}
               >
                 <HistoryIcon style={{ fontSize: "22px" }} />
@@ -107,7 +126,12 @@ export const History = () => {
             <p style={{ marginTop: "12px", fontSize: "14px" }}>Loading meeting activity records...</p>
           </div>
         ) : meetings.length === 0 ? (
-          <Card variant="surface" style={{ padding: "48px 24px", textAlign: "center" }}>
+          <SpotlightCard
+            spotlightColor="rgba(88, 101, 242, 0.2)"
+            borderColor="rgba(88, 101, 242, 0.35)"
+            tiltDegree={4}
+            style={{ padding: "48px 24px", textAlign: "center" }}
+          >
             <div
               style={{
                 width: "52px",
@@ -132,14 +156,15 @@ export const History = () => {
             <Button variant="primary" size="md" onClick={() => navigate("/home")}>
               Start a Meeting
             </Button>
-          </Card>
+          </SpotlightCard>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
             {meetings.map((item, index) => (
-              <Card
+              <SpotlightCard
                 key={item._id || index}
-                variant="surface"
-                interactive={true}
+                spotlightColor="rgba(88, 101, 242, 0.16)"
+                borderColor="rgba(88, 101, 242, 0.35)"
+                tiltDegree={3}
                 style={{
                   display: "flex",
                   alignItems: "center",
@@ -160,6 +185,7 @@ export const History = () => {
                       alignItems: "center",
                       justifyContent: "center",
                       color: "var(--primary-blurple)",
+                      border: "1px solid rgba(255, 255, 255, 0.08)",
                     }}
                   >
                     <VideocamIcon style={{ fontSize: "20px" }} />
@@ -182,7 +208,7 @@ export const History = () => {
                         onClick={() => handleCopyCode(item.meetingCode)}
                         style={{
                           background: "var(--surface-indigo)",
-                          border: "var(--border-subtle)",
+                          border: "1px solid rgba(255, 255, 255, 0.08)",
                           borderRadius: "var(--radius-xs)",
                           padding: "3px 6px",
                           color: copiedCode === item.meetingCode ? "var(--accent-green)" : "var(--text-muted)",
@@ -232,7 +258,7 @@ export const History = () => {
                     </Button>
                   )}
                 </div>
-              </Card>
+              </SpotlightCard>
             ))}
           </div>
         )}

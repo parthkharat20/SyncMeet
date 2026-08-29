@@ -1,19 +1,58 @@
 import React, { useMemo, useId } from "react";
 import { cn } from "../../utils/cn";
 
-/**
- * ── The Corridor ────────────────────────────────────────────────
- * Two rails of cards ride from far behind the screen toward the
- * viewer. Perspective alone does the work that looks like two
- * animations: as a card's z grows it gets bigger *and* its screen x
- * sweeps outward from the vanishing point, because the projection
- * scales position and size by the same factor.
- *
- * 1. Depth is authored as apparent size geometrically.
- * 2. Rails open early with fan > 1 and hold.
- * 3. Neither end of the loop is on screen (railBirth is negative).
- * ───────────────────────────────────────────────────────────────
- */
+const CDN = "https://pub-940ccf6255b54fa799a9b01050e6c227.r2.dev";
+
+export const DEFAULT_STREAM_IMAGES = [
+  {
+    src: `${CDN}/stock-images/767d99bb371a54d0d36751e8cecae43c.jpg`,
+    alt: "Collaboration seascape profile silhouette",
+  },
+  {
+    src: `${CDN}/gradients/hero_gradient/hero-gradients-01.png`,
+    alt: "Soft multi-tone gradient wash",
+  },
+  {
+    src: `${CDN}/stock-images/821d815affa6496c39cbdeeec7a84603.jpg`,
+    alt: "Double-exposure team portrait at dusk",
+  },
+  {
+    src: `${CDN}/gradients/crimson_aura/crimson-aura-02.png`,
+    alt: "Crimson aura gradient",
+  },
+  {
+    src: `${CDN}/stock-images/937438c560ada1c83317f2c11b3454b0.jpg`,
+    alt: "Side-profile portrait against a deep backdrop",
+  },
+  {
+    src: `${CDN}/gradients/hue-flow/hue-flow-01.png`,
+    alt: "Flowing hue gradient",
+  },
+  {
+    src: `${CDN}/stock-images/98f89cb9994f5c382ab964062c4039db.jpg`,
+    alt: "Creative brainstorming figure with vibrant clouds",
+  },
+  {
+    src: `${CDN}/gradients/moon/moon-grade-03.png`,
+    alt: "Moon-toned gradient",
+  },
+  {
+    src: `${CDN}/stock-images/ddcbee38be8b7274e19e132d7ab35b53.jpg`,
+    alt: "Hand gesture with freedom and creativity",
+  },
+  {
+    src: `${CDN}/gradients/hero_gradient/hero-gradients-03.png`,
+    alt: "Layered hero gradient",
+  },
+  {
+    src: `${CDN}/gradients/hue-flow/hue-flow-02.png`,
+    alt: "Second flowing hue gradient",
+  },
+  {
+    src: `${CDN}/gradients/moon/moon-grade-05.png`,
+    alt: "Deep moon-toned gradient",
+  },
+];
 
 const DEFAULT_PATH = {
   perspective: 30,
@@ -30,7 +69,6 @@ const DEFAULT_PATH = {
   stops: 24,
 };
 
-/** Sample the path once so the CSS keyframes trace the real curve. */
 function generateKeyframes(dir, name, p) {
   const steps = [];
   for (let s = 0; s <= p.stops; s++) {
@@ -47,11 +85,13 @@ function generateKeyframes(dir, name, p) {
 }
 
 export function ImageStreamHero({
-  images = [],
+  images = DEFAULT_STREAM_IMAGES,
   cards = 9,
   speed = 18,
-  axis = 55,
+  axis = 50,
   path = {},
+  opacity = 1,
+  vignette = true,
   children,
   className = "",
   style = {},
@@ -94,6 +134,7 @@ export function ImageStreamHero({
           pointerEvents: "none",
           perspective: `${p.perspective}cqw`,
           perspectiveOrigin: `50% ${axis}%`,
+          opacity,
           zIndex: 1,
         }}
       >
@@ -113,7 +154,7 @@ export function ImageStreamHero({
               return (
                 <div
                   key={`${name}-${i}`}
-                  className={cn(cardClass, "absolute overflow-hidden shadow-2xl")}
+                  className={cn(cardClass, "absolute overflow-hidden")}
                   style={{
                     position: "absolute",
                     left: "50%",
@@ -126,8 +167,8 @@ export function ImageStreamHero({
                     animation: `${name} ${speed}s linear infinite`,
                     animationDelay: `${-(i * speed) / cards}s`,
                     backfaceVisibility: "hidden",
-                    border: "1px solid rgba(255, 255, 255, 0.14)",
-                    boxShadow: "0 16px 36px rgba(0, 0, 0, 0.7), 0 0 20px rgba(88, 101, 242, 0.2)",
+                    border: "1px solid rgba(255, 255, 255, 0.16)",
+                    boxShadow: "0 16px 36px rgba(0, 0, 0, 0.75), 0 0 20px rgba(88, 101, 242, 0.25)",
                     background: "var(--surface-indigo)",
                     overflow: "hidden",
                   }}
@@ -155,10 +196,27 @@ export function ImageStreamHero({
         </div>
       </div>
 
+      {/* High-Contrast Vignette Overlay for Background Depth */}
+      {vignette && (
+        <div
+          aria-hidden="true"
+          style={{
+            position: "absolute",
+            inset: 0,
+            background:
+              "radial-gradient(ellipse at 50% 50%, rgba(9, 10, 16, 0.72) 0%, rgba(9, 10, 16, 0.88) 60%, rgba(9, 10, 16, 0.98) 100%)",
+            pointerEvents: "none",
+            zIndex: 2,
+          }}
+        />
+      )}
+
       {/* Foreground Content Layer */}
-      <div style={{ position: "relative", zIndex: 10, height: "100%" }}>
-        {children}
-      </div>
+      {children && (
+        <div style={{ position: "relative", zIndex: 10, height: "100%" }}>
+          {children}
+        </div>
+      )}
     </div>
   );
 }

@@ -11,6 +11,8 @@ import Alert from "../components/ui/Alert";
 import Badge from "../components/ui/Badge";
 import Input from "../components/ui/Input";
 import SyncMeetLogo from "../components/ui/SyncMeetLogo";
+import SpotlightCard from "../components/ui/SpotlightCard";
+import ImageStreamHero from "../components/ui/ImageStreamHero";
 import styles from "../styles/videoComponent.module.css";
 
 import VideocamIcon from "@mui/icons-material/Videocam";
@@ -722,13 +724,35 @@ export default function VideoMeetComponent() {
       : "repeat(2, 1fr)";
 
   return (
-    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "var(--canvas-dark)" }}>
+    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "var(--canvas-dark)", position: "relative", overflow: "hidden" }}>
       {/* ─── Pre-Call Lobby Screen ─── */}
       {askForUsername ? (
-        <>
+        <div style={{ position: "relative", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
           <Navbar />
-          <main className={styles.lobbyWrapper}>
-            <div className={`${styles.lobbyCard} animate-entrance`}>
+
+          {/* 3D Perspective Stream Corridor in Lobby Background */}
+          <ImageStreamHero
+            opacity={0.55}
+            speed={24}
+            axis={48}
+            vignette={true}
+            style={{
+              position: "absolute",
+              inset: 0,
+              width: "100%",
+              height: "100%",
+              pointerEvents: "none",
+              zIndex: 0,
+            }}
+          />
+
+          <main className={styles.lobbyWrapper} style={{ position: "relative", zIndex: 10 }}>
+            <SpotlightCard
+              spotlightColor="rgba(88, 101, 242, 0.22)"
+              borderColor="rgba(88, 101, 242, 0.45)"
+              tiltDegree={4}
+              className={`${styles.lobbyCard} animate-entrance`}
+            >
               <div style={{ textAlign: "center", marginBottom: "20px" }}>
                 <div style={{ display: "inline-flex", marginBottom: "10px" }}>
                   <Badge variant="blurple">ROOM: {roomCode}</Badge>
@@ -819,9 +843,9 @@ export default function VideoMeetComponent() {
                   <span>Join Meeting</span>
                 </Button>
               </div>
-            </div>
+            </SpotlightCard>
           </main>
-        </>
+        </div>
       ) : (
         /* ─── Active Video Meeting Room (Full Viewport Stage) ─── */
         <div className={styles.meetVideoContainer}>

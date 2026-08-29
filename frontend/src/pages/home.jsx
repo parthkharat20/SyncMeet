@@ -5,6 +5,7 @@ import withAuth from "../utils/withAuth";
 import api from "../services/api";
 import Navbar from "../components/layout/Navbar";
 import SpotlightCard from "../components/ui/SpotlightCard";
+import ImageStreamHero from "../components/ui/ImageStreamHero";
 import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
 import Input from "../components/ui/Input";
@@ -127,10 +128,26 @@ export const Home = () => {
   };
 
   return (
-    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "var(--canvas)" }}>
+    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "var(--canvas)", position: "relative", overflow: "hidden" }}>
       <Navbar />
 
-      <main style={{ flex: 1, padding: "32px 24px", maxWidth: "1080px", margin: "0 auto", width: "100%" }}>
+      {/* 3D Perspective Stream Corridor in Background */}
+      <ImageStreamHero
+        opacity={0.5}
+        speed={24}
+        axis={45}
+        vignette={true}
+        style={{
+          position: "absolute",
+          inset: 0,
+          width: "100%",
+          height: "100%",
+          pointerEvents: "none",
+          zIndex: 0,
+        }}
+      />
+
+      <main style={{ flex: 1, padding: "32px 24px", maxWidth: "1080px", margin: "0 auto", width: "100%", position: "relative", zIndex: 10 }}>
         {/* Welcome Header Banner */}
         <SpotlightCard
           spotlightColor="rgba(88, 101, 242, 0.18)"
