@@ -4,6 +4,7 @@ import { useAuth } from "../hooks/useAuth";
 import withAuth from "../utils/withAuth";
 import Navbar from "../components/layout/Navbar";
 import SpotlightCard from "../components/ui/SpotlightCard";
+import SyncMeetAtmosphere from "../components/ui/SyncMeetAtmosphere";
 import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
 import Badge from "../components/ui/Badge";
@@ -62,10 +63,13 @@ export const History = () => {
   };
 
   return (
-    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "var(--canvas)" }}>
+    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "var(--canvas)", position: "relative" }}>
+      {/* ─── Global Full-Page Immersive Background Atmosphere ─── */}
+      <SyncMeetAtmosphere variant="history" />
+
       <Navbar />
 
-      <main style={{ flex: 1, padding: "32px 24px", maxWidth: "960px", margin: "0 auto", width: "100%" }}>
+      <main style={{ flex: 1, padding: "32px 24px", maxWidth: "960px", margin: "0 auto", width: "100%", position: "relative", zIndex: 10 }}>
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "28px", flexWrap: "wrap", gap: "14px" }} className="animate-entrance">
           <div>

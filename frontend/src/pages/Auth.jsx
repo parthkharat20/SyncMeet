@@ -6,7 +6,7 @@ import SyncMeetLogo from "../components/ui/SyncMeetLogo";
 import SpotlightCard from "../components/ui/SpotlightCard";
 import Alert from "../components/ui/Alert";
 import Badge from "../components/ui/Badge";
-import KineticMatrix from "../components/ui/KineticMatrix";
+import SyncMeetAtmosphere from "../components/ui/SyncMeetAtmosphere";
 import LoginForm from "../components/features/auth/LoginForm";
 import RegisterForm from "../components/features/auth/RegisterForm";
 
@@ -94,19 +94,8 @@ export const Auth = () => {
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "var(--canvas)", position: "relative", overflow: "hidden" }}>
       <Navbar />
 
-      {/* Background KineticMatrix Mesh */}
-      <KineticMatrix nodeSpacing={44} maxDistance={65} />
-
-      {/* Subtle Radial Vignette */}
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          background: "radial-gradient(ellipse at 50% 40%, rgba(9, 10, 16, 0.45) 0%, rgba(9, 10, 16, 0.95) 85%)",
-          pointerEvents: "none",
-          zIndex: 1,
-        }}
-      />
+      {/* ─── Global Full-Page Immersive Background Atmosphere ─── */}
+      <SyncMeetAtmosphere variant="auth" />
 
       <main
         style={{

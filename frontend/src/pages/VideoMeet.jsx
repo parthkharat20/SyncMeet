@@ -12,6 +12,7 @@ import Badge from "../components/ui/Badge";
 import Input from "../components/ui/Input";
 import SyncMeetLogo from "../components/ui/SyncMeetLogo";
 import SpotlightCard from "../components/ui/SpotlightCard";
+import SyncMeetAtmosphere from "../components/ui/SyncMeetAtmosphere";
 import styles from "../styles/videoComponent.module.css";
 
 import VideocamIcon from "@mui/icons-material/Videocam";
@@ -723,12 +724,15 @@ export default function VideoMeetComponent() {
       : "repeat(2, 1fr)";
 
   return (
-    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "var(--canvas-dark)" }}>
+    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "var(--canvas-dark)", position: "relative" }}>
       {/* ─── Pre-Call Lobby Screen ─── */}
       {askForUsername ? (
         <>
+          {/* ─── Global Full-Page Immersive Background Atmosphere (Lobby) ─── */}
+          <SyncMeetAtmosphere variant="lobby" />
+
           <Navbar />
-          <main className={styles.lobbyWrapper}>
+          <main className={styles.lobbyWrapper} style={{ position: "relative", zIndex: 10 }}>
             <SpotlightCard
               spotlightColor="rgba(88, 101, 242, 0.22)"
               borderColor="rgba(88, 101, 242, 0.45)"
@@ -830,7 +834,9 @@ export default function VideoMeetComponent() {
         </>
       ) : (
         /* ─── Active Video Meeting Room (Full Viewport Stage) ─── */
-        <div className={styles.meetVideoContainer}>
+        <div className={styles.meetVideoContainer} style={{ position: "relative" }}>
+          {/* ─── Global Full-Page Immersive Background Atmosphere (Subdued Meeting Mode) ─── */}
+          <SyncMeetAtmosphere variant="meeting" />
           {/* Reconnecting Network Banner */}
           {isDisconnected && !meetingEndedError && !roomFullError && (
             <div

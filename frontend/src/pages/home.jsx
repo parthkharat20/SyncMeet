@@ -11,6 +11,7 @@ import Input from "../components/ui/Input";
 import Alert from "../components/ui/Alert";
 import Badge from "../components/ui/Badge";
 import SyncMeetLogo from "../components/ui/SyncMeetLogo";
+import SyncMeetAtmosphere from "../components/ui/SyncMeetAtmosphere";
 
 import VideocamIcon from "@mui/icons-material/Videocam";
 import AddBoxIcon from "@mui/icons-material/AddBox";
@@ -127,10 +128,13 @@ export const Home = () => {
   };
 
   return (
-    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "var(--canvas)" }}>
+    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "var(--canvas)", position: "relative" }}>
+      {/* ─── Global Full-Page Immersive Background Atmosphere ─── */}
+      <SyncMeetAtmosphere variant="dashboard" />
+
       <Navbar />
 
-      <main style={{ flex: 1, padding: "32px 24px", maxWidth: "1080px", margin: "0 auto", width: "100%" }}>
+      <main style={{ flex: 1, padding: "32px 24px", maxWidth: "1080px", margin: "0 auto", width: "100%", position: "relative", zIndex: 10 }}>
         {/* Welcome Header Banner */}
         <SpotlightCard
           spotlightColor="rgba(88, 101, 242, 0.18)"
