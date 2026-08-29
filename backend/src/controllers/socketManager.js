@@ -28,6 +28,11 @@ export const normalizeRoomCode = (rawPath) => {
   return String(rawPath).trim().toUpperCase();
 };
 
+export const isRoomActive = (rawPath) => {
+  const roomCode = normalizeRoomCode(rawPath);
+  return Array.isArray(connections[roomCode]) && connections[roomCode].length > 0;
+};
+
 export const connectToSocket = (server) => {
   const allowedOrigin = process.env.CLIENT_ORIGIN || "http://localhost:5173";
 
@@ -39,6 +44,10 @@ export const connectToSocket = (server) => {
           origin === allowedOrigin ||
           allowedOrigin === "*" ||
           origin.startsWith("http://localhost:") ||
+          origin.startsWith("http://127.0.0.1:") ||
+          origin.startsWith("http://192.168.") ||
+          origin.startsWith("http://10.") ||
+          origin.startsWith("http://172.") ||
           origin.endsWith(".vercel.app") ||
           origin.endsWith(".railway.app")
         ) {

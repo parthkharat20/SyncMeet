@@ -1,7 +1,10 @@
+import dotenv from "dotenv";
+dotenv.config();
+
 import { spawn } from "node:child_process";
 import http from "node:http";
 import mongoose from "mongoose";
-import Meeting from "./src/models/meeting.model.js";
+import Meeting from "../../src/models/meeting.model.js";
 
 console.log("=== PHASE 15 — MEETING LIFECYCLE EDGE CASES TEST ===");
 

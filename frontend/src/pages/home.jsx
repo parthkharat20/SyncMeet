@@ -72,19 +72,26 @@ export const Home = () => {
 
   const handleJoinMeeting = async (e) => {
     if (e) e.preventDefault();
-    const cleanCode = meetingCode.trim().toUpperCase();
+    let raw = meetingCode.trim();
 
-    if (!cleanCode) {
-      setErrorMsg("Please enter a meeting code.");
+    if (!raw) {
+      setErrorMsg("Please enter a meeting code or link.");
       return;
     }
+
+    let cleanCode = raw;
+    if (raw.includes("/")) {
+      const parts = raw.split("?")[0].split("#")[0].split("/").filter(Boolean);
+      cleanCode = parts[parts.length - 1] || raw;
+    }
+    cleanCode = cleanCode.toUpperCase();
 
     setLoading(true);
     setErrorMsg("");
 
     try {
       const statusRes = await api.get(`/check_meeting_status/${cleanCode}`);
-      if (statusRes.data && statusRes.data.ended) {
+      if (statusRes.data && statusRes.data.ended && !statusRes.data.active) {
         setErrorMsg("This meeting has already ended and cannot be rejoined.");
         setLoading(false);
         return;
@@ -94,7 +101,8 @@ export const Home = () => {
       navigate(`/${cleanCode}`);
     } catch (e) {
       console.error("[JOIN MEETING ERROR]", e);
-      setErrorMsg("Unable to join meeting. Please check the code and try again.");
+      // Fallback: navigate directly to room so user is not blocked by network blips
+      navigate(`/${cleanCode}`);
     } finally {
       setLoading(false);
     }

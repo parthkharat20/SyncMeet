@@ -1,7 +1,9 @@
+import mongoose from "mongoose";
 import User from "../models/user.model.js";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
 import Meeting from "../models/meeting.model.js";
+import { isRoomActive } from "./socketManager.js";
 
 const MAX_CONCURRENT_SESSIONS = 10;
 const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days TTL
@@ -222,12 +224,19 @@ const checkMeetingStatus = async (req, res) => {
       return res.status(400).json({ message: "Meeting code is required" });
     }
 
-    // If database is not ready, do not block users from joining peer-to-peer calls
+    const cleanCode = code.trim().toUpperCase();
+
+    // If any participant is currently connected via socket, the meeting is active
+    if (typeof isRoomActive === "function" && isRoomActive(cleanCode)) {
+      return res.status(200).json({ ended: false, active: true });
+    }
+
+    // If database is not connected, allow peer-to-peer call flow
     if (mongoose.connection.readyState !== 1) {
       return res.status(200).json({ ended: false });
     }
 
-    const meeting = await Meeting.findOne({ meetingCode: code.trim().toUpperCase() }).sort({ date: -1 });
+    const meeting = await Meeting.findOne({ meetingCode: cleanCode }).sort({ date: -1 });
     if (meeting && meeting.status === "ended") {
       return res.status(200).json({ ended: true, message: "This meeting has ended." });
     }

@@ -29,22 +29,33 @@ import ReplayIcon from "@mui/icons-material/Replay";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import CheckIcon from "@mui/icons-material/Check";
 import PersonIcon from "@mui/icons-material/Person";
+import LinkIcon from "@mui/icons-material/Link";
 
 const getIceServers = () => {
   const turnUsername = import.meta.env.VITE_TURN_USERNAME;
   const turnPassword = import.meta.env.VITE_TURN_PASSWORD;
 
-  const iceServers = [{ urls: "stun:stun.relay.metered.ca:80" }];
+  const iceServers = [
+    { urls: "stun:stun.l.google.com:19302" },
+    { urls: "stun:stun1.l.google.com:19302" },
+    { urls: "stun:stun2.l.google.com:19302" },
+    { urls: "stun:stun3.l.google.com:19302" },
+    { urls: "stun:stun4.l.google.com:19302" },
+    { urls: "stun:stun.relay.metered.ca:80" },
+  ];
 
-  if (turnUsername && turnPassword) {
+  if (
+    turnUsername &&
+    turnPassword &&
+    turnUsername !== "metered_user" &&
+    turnPassword !== "metered_pass"
+  ) {
     iceServers.push(
       { urls: "turn:global.relay.metered.ca:80", username: turnUsername, credential: turnPassword },
       { urls: "turn:global.relay.metered.ca:80?transport=tcp", username: turnUsername, credential: turnPassword },
       { urls: "turn:global.relay.metered.ca:443", username: turnUsername, credential: turnPassword },
       { urls: "turns:global.relay.metered.ca:443?transport=tcp", username: turnUsername, credential: turnPassword }
     );
-  } else {
-    console.warn("[TURN CONFIG] No TURN credentials found — calls behind restrictive NATs may fail.");
   }
 
   return { iceServers };
@@ -55,6 +66,7 @@ export default function VideoMeetComponent() {
   const socketIdRef = useRef(null);
   const localRef = useRef(null);
   const connectionsRef = useRef({});
+  const iceCandidateQueueRef = useRef({});
 
   const navigate = useNavigate();
   const params = useParams();
@@ -75,17 +87,25 @@ export default function VideoMeetComponent() {
   const [roomFullError, setRoomFullError] = useState("");
   const [meetingEndedError, setMeetingEndedError] = useState("");
   const [copiedCode, setCopiedCode] = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
 
   const [messages, setMessages] = useState([]);
   const [message, setMessage] = useState("");
   const [newMessages, setNewMessages] = useState(0);
 
   const [askForUsername, setAskForUsername] = useState(true);
-  const [username, setUsername] = useState(userData?.name || userData?.username || "");
+  const [username, setUsername] = useState(() => {
+    if (userData?.name || userData?.username) return userData.name || userData.username;
+    try {
+      const saved = sessionStorage.getItem("syncmeet_user_name");
+      if (saved) return saved;
+    } catch (e) {}
+    return `Guest-${Math.floor(1000 + Math.random() * 9000)}`;
+  });
   const [videos, setVideos] = useState([]);
 
   useEffect(() => {
-    if (userData && !username) {
+    if (userData && (!username || username.startsWith("Guest-"))) {
       setUsername(userData.name || userData.username || "");
     }
   }, [userData]);
@@ -301,6 +321,13 @@ export default function VideoMeetComponent() {
     setTimeout(() => setCopiedCode(false), 2000);
   };
 
+  const handleCopyMeetingLink = () => {
+    const inviteUrl = `${window.location.origin}/${roomCode}`;
+    navigator.clipboard.writeText(inviteUrl);
+    setCopiedLink(true);
+    setTimeout(() => setCopiedLink(false), 2000);
+  };
+
   // WebRTC Peer Connection & Signaling
   const gotMessageFromServer = (fromId, message) => {
     try {
@@ -316,6 +343,15 @@ export default function VideoMeetComponent() {
       if (signal.sdp) {
         pc.setRemoteDescription(new RTCSessionDescription(signal.sdp))
           .then(() => {
+            // Apply queued ICE candidates for this peer
+            if (iceCandidateQueueRef.current[fromId] && iceCandidateQueueRef.current[fromId].length > 0) {
+              const queue = iceCandidateQueueRef.current[fromId];
+              iceCandidateQueueRef.current[fromId] = [];
+              queue.forEach((cand) => {
+                pc.addIceCandidate(cand).catch((e) => console.error("Error adding queued ICE candidate:", e));
+              });
+            }
+
             if (signal.sdp.type === "offer") {
               pc.createAnswer()
                 .then((description) => {
@@ -338,8 +374,16 @@ export default function VideoMeetComponent() {
       }
 
       if (signal.ice) {
-        pc.addIceCandidate(new RTCIceCandidate(signal.ice))
-          .catch((e) => console.error("Error adding ICE candidate:", e));
+        const candidate = new RTCIceCandidate(signal.ice);
+        if (pc && pc.remoteDescription && pc.remoteDescription.type) {
+          pc.addIceCandidate(candidate)
+            .catch((e) => console.error("Error adding ICE candidate:", e));
+        } else {
+          if (!iceCandidateQueueRef.current[fromId]) {
+            iceCandidateQueueRef.current[fromId] = [];
+          }
+          iceCandidateQueueRef.current[fromId].push(candidate);
+        }
       }
     } catch (e) {
       console.error("Error parsing signal JSON from server:", e);
@@ -361,23 +405,35 @@ export default function VideoMeetComponent() {
     };
 
     pc.ontrack = (event) => {
-      if (event.streams && event.streams[0]) {
-        setVideos((prevVideos) => {
-          const exists = prevVideos.some((v) => v.socketId === peerSocketId);
-          if (exists) {
-            return prevVideos.map((v) =>
-              v.socketId === peerSocketId ? { ...v, stream: event.streams[0] } : v
-            );
-          }
-          return [...prevVideos, { socketId: peerSocketId, stream: event.streams[0] }];
-        });
-      }
+      const incomingStream = (event.streams && event.streams[0]) ? event.streams[0] : new MediaStream([event.track]);
+      setVideos((prevVideos) => {
+        const exists = prevVideos.some((v) => v.socketId === peerSocketId);
+        if (exists) {
+          return prevVideos.map((v) => {
+            if (v.socketId === peerSocketId) {
+              if (v.stream && event.track && !v.stream.getTracks().includes(event.track)) {
+                try { v.stream.addTrack(event.track); } catch (e) {}
+              }
+              return { ...v, stream: v.stream || incomingStream };
+            }
+            return v;
+          });
+        }
+        return [...prevVideos, { socketId: peerSocketId, stream: incomingStream }];
+      });
     };
 
-    if (window.localStream) {
+    if (window.localStream && window.localStream.getTracks().length > 0) {
       window.localStream.getTracks().forEach((track) => {
         pc.addTrack(track, window.localStream);
       });
+    } else {
+      try {
+        pc.addTransceiver("video", { direction: "recvonly" });
+        pc.addTransceiver("audio", { direction: "recvonly" });
+      } catch (e) {
+        console.warn("[TRANSCEIVER LOG]", e.message);
+      }
     }
 
     return pc;
@@ -403,10 +459,11 @@ export default function VideoMeetComponent() {
         } catch (e) {}
       });
       connectionsRef.current = {};
+      iceCandidateQueueRef.current = {};
       setVideos([]);
 
       const roomPath = window.location.href;
-      socket.emit("join-call", roomPath);
+      socket.emit("join-call", roomPath, username);
 
       socket.on("signal", gotMessageFromServer);
       socket.on("chat-messages", addMessage);
@@ -419,8 +476,12 @@ export default function VideoMeetComponent() {
       socket.on("user-left", (id) => {
         console.log("[USER LEFT]", id);
         if (connectionsRef.current[id]) {
-          connectionsRef.current[id].close();
+          try {
+            connectionsRef.current[id].close();
+          } catch (e) {}
+          delete connectionsRef.current[id];
         }
+        delete iceCandidateQueueRef.current[id];
         setVideos((prev) => prev.filter((video) => video.socketId !== id));
       });
 
@@ -436,6 +497,7 @@ export default function VideoMeetComponent() {
               } catch (e) {}
               delete connectionsRef.current[oldId];
             }
+            delete iceCandidateQueueRef.current[oldId];
             setVideos((prev) => prev.filter((video) => video.socketId !== oldId));
           }
         });
@@ -471,7 +533,11 @@ export default function VideoMeetComponent() {
   };
 
   const connect = () => {
-    if (!username.trim()) return;
+    const finalName = username.trim() || `Guest-${Math.floor(1000 + Math.random() * 9000)}`;
+    setUsername(finalName);
+    try {
+      sessionStorage.setItem("syncmeet_user_name", finalName);
+    } catch (e) {}
     setAskForUsername(false);
 
     if (!window.localStream) {
@@ -689,10 +755,28 @@ export default function VideoMeetComponent() {
                     cursor: "pointer",
                     display: "flex",
                     alignItems: "center",
+                    padding: "2px",
                   }}
                   title="Copy Meeting Code"
                 >
                   {copiedCode ? <CheckIcon style={{ fontSize: "14px" }} /> : <ContentCopyIcon style={{ fontSize: "14px" }} />}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleCopyMeetingLink}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    color: copiedLink ? "var(--accent-green)" : "var(--text-muted)",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    padding: "2px",
+                    marginLeft: "2px",
+                  }}
+                  title="Copy Full Invite Link"
+                >
+                  {copiedLink ? <CheckIcon style={{ fontSize: "14px" }} /> : <LinkIcon style={{ fontSize: "15px" }} />}
                 </button>
               </div>
 
@@ -950,6 +1034,16 @@ export default function VideoMeetComponent() {
                 title={copiedCode ? "Code Copied!" : "Copy Meeting Code"}
               >
                 {copiedCode ? <CheckIcon style={{ color: "var(--accent-green)" }} /> : <ContentCopyIcon />}
+              </IconButton>
+
+              {/* Copy Invite Link */}
+              <IconButton
+                size="md"
+                variant="default"
+                onClick={handleCopyMeetingLink}
+                title={copiedLink ? "Link Copied!" : "Copy Meeting Link"}
+              >
+                {copiedLink ? <CheckIcon style={{ color: "var(--accent-green)" }} /> : <LinkIcon />}
               </IconButton>
 
               {/* End / Leave Call Button */}

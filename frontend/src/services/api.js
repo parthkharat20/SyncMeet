@@ -2,11 +2,24 @@ import axios from "axios";
 
 export const getBackendUrl = () => {
   const envUrl = import.meta.env.VITE_BACKEND_URL;
-  if (!envUrl && import.meta.env.MODE === "production") {
-    console.warn(
-      "[CONFIG WARNING] VITE_BACKEND_URL environment variable is undefined in production build! Defaulting to localhost:8000. Ensure VITE_BACKEND_URL is populated in production build environment."
-    );
+
+  // If a custom cloud/production URL is configured in .env (not localhost), prioritize it
+  if (envUrl && !envUrl.includes("localhost") && !envUrl.includes("127.0.0.1")) {
+    return envUrl;
   }
+
+  // If accessing from another device/PC on the LAN (e.g. 192.168.x.x), dynamically use that IP
+  if (
+    typeof window !== "undefined" &&
+    window.location &&
+    window.location.hostname &&
+    window.location.hostname !== "localhost" &&
+    window.location.hostname !== "127.0.0.1"
+  ) {
+    const protocol = window.location.protocol || "http:";
+    return `${protocol}//${window.location.hostname}:8000`;
+  }
+
   return envUrl || "http://localhost:8000";
 };
 

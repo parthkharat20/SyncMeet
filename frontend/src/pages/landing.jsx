@@ -52,11 +52,17 @@ export const Landing = () => {
   };
 
   const handleQuickJoin = (e) => {
-    e.preventDefault();
-    if (meetingCode.trim()) {
-      navigate(`/${meetingCode.trim().toUpperCase()}`);
+    if (e) e.preventDefault();
+    const raw = meetingCode.trim();
+    if (raw) {
+      let cleanCode = raw;
+      if (raw.includes("/")) {
+        const parts = raw.split("?")[0].split("#")[0].split("/").filter(Boolean);
+        cleanCode = parts[parts.length - 1] || raw;
+      }
+      navigate(`/${cleanCode.toUpperCase()}`);
     } else {
-      navigate("/auth");
+      handleCreateMeetingQuick();
     }
   };
 

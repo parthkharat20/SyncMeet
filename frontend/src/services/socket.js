@@ -6,11 +6,12 @@ export const createSocketConnection = (customToken = null) => {
   const serverUrl = getBackendUrl();
   const isSecure = serverUrl.startsWith("https");
 
-  return io.connect(serverUrl, {
+  return io(serverUrl, {
     auth: { token },
     secure: isSecure,
+    transports: ["websocket", "polling"],
     reconnection: true,
-    reconnectionAttempts: 10,
+    reconnectionAttempts: 15,
     reconnectionDelay: 1000,
   });
 };
