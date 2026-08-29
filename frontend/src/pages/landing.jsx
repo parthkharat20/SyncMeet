@@ -4,6 +4,7 @@ import Navbar from "../components/layout/Navbar";
 import SyncMeetLogo from "../components/ui/SyncMeetLogo";
 import KineticMatrix from "../components/ui/KineticMatrix";
 import SpotlightCard from "../components/ui/SpotlightCard";
+import ImageStreamHero from "../components/ui/ImageStreamHero";
 import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
 import Input from "../components/ui/Input";
@@ -21,6 +22,59 @@ import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
 import SecurityIcon from "@mui/icons-material/Security";
 import SpeedIcon from "@mui/icons-material/Speed";
 import HubIcon from "@mui/icons-material/Hub";
+
+const CDN = "https://pub-940ccf6255b54fa799a9b01050e6c227.r2.dev";
+
+const STREAM_IMAGES = [
+  {
+    src: `${CDN}/stock-images/767d99bb371a54d0d36751e8cecae43c.jpg`,
+    alt: "Collaboration seascape profile silhouette",
+  },
+  {
+    src: `${CDN}/gradients/hero_gradient/hero-gradients-01.png`,
+    alt: "Soft multi-tone gradient wash",
+  },
+  {
+    src: `${CDN}/stock-images/821d815affa6496c39cbdeeec7a84603.jpg`,
+    alt: "Double-exposure team portrait at dusk",
+  },
+  {
+    src: `${CDN}/gradients/crimson_aura/crimson-aura-02.png`,
+    alt: "Crimson aura gradient",
+  },
+  {
+    src: `${CDN}/stock-images/937438c560ada1c83317f2c11b3454b0.jpg`,
+    alt: "Side-profile portrait against a deep backdrop",
+  },
+  {
+    src: `${CDN}/gradients/hue-flow/hue-flow-01.png`,
+    alt: "Flowing hue gradient",
+  },
+  {
+    src: `${CDN}/stock-images/98f89cb9994f5c382ab964062c4039db.jpg`,
+    alt: "Creative brainstorming figure with vibrant clouds",
+  },
+  {
+    src: `${CDN}/gradients/moon/moon-grade-03.png`,
+    alt: "Moon-toned gradient",
+  },
+  {
+    src: `${CDN}/stock-images/ddcbee38be8b7274e19e132d7ab35b53.jpg`,
+    alt: "Hand gesture with freedom and creativity",
+  },
+  {
+    src: `${CDN}/gradients/hero_gradient/hero-gradients-03.png`,
+    alt: "Layered hero gradient",
+  },
+  {
+    src: `${CDN}/gradients/hue-flow/hue-flow-02.png`,
+    alt: "Second flowing hue gradient",
+  },
+  {
+    src: `${CDN}/gradients/moon/moon-grade-05.png`,
+    alt: "Deep moon-toned gradient",
+  },
+];
 
 export const Landing = () => {
   const navigate = useNavigate();
@@ -622,7 +676,80 @@ export const Landing = () => {
         </div>
       </section>
 
-      {/* ─── 4. Technology & Architecture 3D Spotlight Showcase ─── */}
+      {/* ─── 4. Featured 3D Perspective Corridor Showcase (ImageStreamHero) ─── */}
+      <section style={{ padding: "0 24px 72px 24px", maxWidth: "1080px", margin: "0 auto", width: "100%" }}>
+        <ImageStreamHero
+          images={STREAM_IMAGES}
+          cards={9}
+          speed={18}
+          axis={55}
+          style={{
+            height: "480px",
+            borderRadius: "var(--radius-xl)",
+            border: "1px solid rgba(255, 255, 255, 0.12)",
+            background: "radial-gradient(ellipse at 50% 50%, #151827 0%, #090a10 100%)",
+            boxShadow: "0 24px 60px rgba(0,0,0,0.8), 0 0 30px rgba(88, 101, 242, 0.15)",
+          }}
+        >
+          {/* Dark radial overlay to ensure high contrast */}
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              background: "radial-gradient(circle at 50% 50%, rgba(9, 10, 16, 0.85) 0%, rgba(9, 10, 16, 0.45) 55%, rgba(9, 10, 16, 0.92) 100%)",
+              pointerEvents: "none",
+            }}
+          />
+
+          <div
+            style={{
+              position: "relative",
+              zIndex: 10,
+              display: "flex",
+              height: "100%",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "space-between",
+              padding: "44px 24px",
+              textAlign: "center",
+            }}
+          >
+            <div style={{ maxWidth: "620px" }}>
+              <div style={{ display: "inline-flex", marginBottom: "14px" }}>
+                <Badge variant="blurple" dot={true}>3D PERSPECTIVE STREAM</Badge>
+              </div>
+              <h2
+                style={{
+                  fontSize: "clamp(28px, 3.8vw, 44px)",
+                  fontWeight: "800",
+                  letterSpacing: "-0.03em",
+                  color: "var(--text-white)",
+                  lineHeight: "1.15",
+                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                }}
+              >
+                Your meetings,
+                <br />
+                <span
+                  style={{
+                    background: "linear-gradient(135deg, #5865f2 0%, #00b0f4 100%)",
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                  }}
+                >
+                  front and centre.
+                </span>
+              </h2>
+            </div>
+
+            <p style={{ color: "var(--text-secondary)", fontSize: "14px", maxWidth: "500px", lineHeight: "1.6" }}>
+              Direct WebRTC peer streaming connects every participant in real time. Crystal-clear video, screen sharing, and continuous audio with zero intermediary latency.
+            </p>
+          </div>
+        </ImageStreamHero>
+      </section>
+
+      {/* ─── 5. Technology & Architecture 3D Spotlight Showcase ─── */}
       <section style={{ padding: "0 24px 64px 24px", maxWidth: "1080px", margin: "0 auto", width: "100%" }}>
         <SpotlightCard
           spotlightColor="rgba(88, 101, 242, 0.2)"
@@ -655,7 +782,7 @@ export const Landing = () => {
         </SpotlightCard>
       </section>
 
-      {/* ─── 5. Restrained Final CTA ─── */}
+      {/* ─── 6. Restrained Final CTA ─── */}
       <section style={{ padding: "0 24px 64px 24px", maxWidth: "780px", margin: "0 auto", width: "100%", textAlign: "center" }}>
         <SpotlightCard
           spotlightColor="rgba(88, 101, 242, 0.25)"
@@ -681,7 +808,7 @@ export const Landing = () => {
         </SpotlightCard>
       </section>
 
-      {/* ─── 6. Clean Minimalist Footer ─── */}
+      {/* ─── 7. Clean Minimalist Footer ─── */}
       <footer
         style={{
           borderTop: "1px solid rgba(255, 255, 255, 0.08)",
