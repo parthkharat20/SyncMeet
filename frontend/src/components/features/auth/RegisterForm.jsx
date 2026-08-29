@@ -81,7 +81,7 @@ export const RegisterForm = ({ onSubmit, loading, externalError }) => {
         <PasswordStrengthBar password={password} />
       </div>
 
-      <Button type="submit" variant="green" size="lg" fullWidth={true} loading={loading}>
+      <Button type="submit" variant="primary" size="lg" fullWidth={true} loading={loading}>
         Create Free Account
       </Button>
     </form>

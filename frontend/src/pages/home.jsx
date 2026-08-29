@@ -4,6 +4,7 @@ import { useAuth } from "../hooks/useAuth";
 import withAuth from "../utils/withAuth";
 import api from "../services/api";
 import Navbar from "../components/layout/Navbar";
+import SpotlightCard from "../components/ui/SpotlightCard";
 import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
 import Input from "../components/ui/Input";
@@ -131,11 +132,13 @@ export const Home = () => {
 
       <main style={{ flex: 1, padding: "32px 24px", maxWidth: "1080px", margin: "0 auto", width: "100%" }}>
         {/* Welcome Header Banner */}
-        <div
+        <SpotlightCard
+          spotlightColor="rgba(88, 101, 242, 0.18)"
+          borderColor="rgba(88, 101, 242, 0.4)"
+          tiltDegree={3}
           style={{
             background: "var(--surface-card)",
-            border: "var(--border-subtle)",
-            borderRadius: "var(--radius-lg)",
+            border: "1px solid rgba(255, 255, 255, 0.1)",
             padding: "24px 28px",
             marginBottom: "32px",
             display: "flex",
@@ -183,7 +186,7 @@ export const Home = () => {
           <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
             <Badge variant="blurple">P2P Mesh Active</Badge>
           </div>
-        </div>
+        </SpotlightCard>
 
         {errorMsg && (
           <div style={{ marginBottom: "24px" }}>
@@ -202,9 +205,11 @@ export const Home = () => {
             marginBottom: "40px",
           }}
         >
-          {/* Create Instant Meeting Card */}
-          <Card
-            variant="surface"
+          {/* Create Instant Meeting Card with 3D Spotlight */}
+          <SpotlightCard
+            spotlightColor="rgba(88, 101, 242, 0.22)"
+            borderColor="rgba(88, 101, 242, 0.45)"
+            tiltDegree={5}
             style={{
               display: "flex",
               flexDirection: "column",
@@ -224,7 +229,7 @@ export const Home = () => {
                   alignItems: "center",
                   justifyContent: "center",
                   marginBottom: "16px",
-                  border: "var(--border-subtle)",
+                  border: "1px solid rgba(255, 255, 255, 0.08)",
                 }}
               >
                 <AddBoxIcon style={{ fontSize: "24px" }} />
@@ -241,11 +246,13 @@ export const Home = () => {
               <VideocamIcon style={{ fontSize: "18px" }} />
               <span>New Meeting</span>
             </Button>
-          </Card>
+          </SpotlightCard>
 
-          {/* Join Meeting Card */}
-          <Card
-            variant="surface"
+          {/* Join Meeting Card with 3D Spotlight */}
+          <SpotlightCard
+            spotlightColor="rgba(0, 176, 244, 0.22)"
+            borderColor="rgba(0, 176, 244, 0.45)"
+            tiltDegree={5}
             style={{
               display: "flex",
               flexDirection: "column",
@@ -265,7 +272,7 @@ export const Home = () => {
                   alignItems: "center",
                   justifyContent: "center",
                   marginBottom: "16px",
-                  border: "var(--border-subtle)",
+                  border: "1px solid rgba(255, 255, 255, 0.08)",
                 }}
               >
                 <KeyboardIcon style={{ fontSize: "24px" }} />
@@ -291,7 +298,7 @@ export const Home = () => {
                 <ArrowForwardIcon style={{ fontSize: "16px" }} />
               </Button>
             </form>
-          </Card>
+          </SpotlightCard>
         </div>
 
         {/* Recent Activity Section */}

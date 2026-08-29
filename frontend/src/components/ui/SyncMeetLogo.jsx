@@ -2,9 +2,9 @@ import React from "react";
 
 /**
  * SyncMeet Custom Brand Logo Component
- * Combines real-time synchronization nodes with a modern video communication aperture.
+ * Combines interlocking geometric real-time sync apertures with a high-end optical communication node.
  *
- * @param {'xs'|'sm'|'md'|'lg'|'xl'} size - Dimension scale (xs=20px, sm=26px, md=34px, lg=42px, xl=54px)
+ * @param {'xs'|'sm'|'md'|'lg'|'xl'} size - Dimension scale (xs=20px, sm=26px, md=32px, lg=42px, xl=56px)
  * @param {'full'|'mark'|'wordmark'} variant - Layout style (full: icon+text, mark: icon only, wordmark: text only)
  * @param {'blurple'|'white'|'dark'} theme - Color theme
  * @param {string} className - Additional CSS class
@@ -19,12 +19,12 @@ export const SyncMeetLogo = ({
   ...props
 }) => {
   const pixelSizes = {
-    xs: { icon: 20, font: 14, gap: 7 },
-    sm: { icon: 26, font: 16, gap: 8 },
-    md: { icon: 32, font: 19, gap: 10 },
-    lg: { icon: 40, font: 23, gap: 12 },
-    xl: { icon: 52, font: 28, gap: 14 },
-  }[size] || { icon: 32, font: 19, gap: 10 };
+    xs: { icon: 22, font: 15, gap: 8 },
+    sm: { icon: 28, font: 17, gap: 9 },
+    md: { icon: 34, font: 20, gap: 11 },
+    lg: { icon: 44, font: 24, gap: 13 },
+    xl: { icon: 56, font: 30, gap: 16 },
+  }[size] || { icon: 34, font: 20, gap: 11 };
 
   const getColors = () => {
     switch (theme) {
@@ -35,6 +35,7 @@ export const SyncMeetLogo = ({
           accent: "#ffffff",
           text: "#ffffff",
           textSecondary: "#d1d5db",
+          glow: "rgba(255, 255, 255, 0.4)",
         };
       case "dark":
         return {
@@ -43,72 +44,93 @@ export const SyncMeetLogo = ({
           accent: "#374151",
           text: "#090a10",
           textSecondary: "#4b5563",
+          glow: "rgba(0, 0, 0, 0.3)",
         };
       case "blurple":
       default:
         return {
           primary: "#5865f2",
-          secondary: "#7289da",
-          accent: "#4752c4",
+          secondary: "#00b0f4",
+          accent: "#7289da",
           text: "#ffffff",
           textSecondary: "#5865f2",
+          glow: "rgba(88, 101, 242, 0.5)",
         };
     }
   };
 
   const colors = getColors();
+  const gradId = `syncmeet-lens-grad-${theme}-${size}`;
+  const glowGradId = `syncmeet-lens-glow-${theme}-${size}`;
 
-  // Custom SVG Brand Symbol
+  // Custom Bespoke Geometric Brand Symbol
   const BrandSymbol = (
     <svg
       width={pixelSizes.icon}
       height={pixelSizes.icon}
-      viewBox="0 0 36 36"
+      viewBox="0 0 40 40"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       style={{ flexShrink: 0, display: "block" }}
       aria-label="SyncMeet Logo Mark"
     >
       <defs>
-        <linearGradient id={`sm-grad-${theme}-${size}`} x1="2" y1="4" x2="34" y2="32" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor={colors.primary} />
-          <stop offset="100%" stopColor={colors.secondary} />
+        {/* Multi-stop Dynamic Brand Gradient */}
+        <linearGradient id={gradId} x1="2" y1="2" x2="38" y2="38" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#5865f2" />
+          <stop offset="55%" stopColor="#6366f1" />
+          <stop offset="100%" stopColor="#00b0f4" />
         </linearGradient>
+
+        {/* Ambient Core Glow */}
+        <radialGradient id={glowGradId} cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#ffffff" stopOpacity="0.9" />
+          <stop offset="60%" stopColor="#00b0f4" stopOpacity="0.4" />
+          <stop offset="100%" stopColor="#5865f2" stopOpacity="0" />
+        </radialGradient>
       </defs>
 
-      {/* Main Video Camera Rounded Body */}
+      {/* Outer Rounded Hex/Shield Base */}
       <rect
         x="3"
-        y="6"
-        width="20"
-        height="24"
-        rx="6"
-        fill={`url(#sm-grad-${theme}-${size})`}
+        y="5"
+        width="22"
+        height="30"
+        rx="8"
+        fill={`url(#${gradId})`}
+        stroke="rgba(255, 255, 255, 0.2)"
+        strokeWidth="1"
       />
 
-      {/* Synchronizing Dual Lens Aperture */}
-      <circle cx="13" cy="18" r="5.5" fill="#ffffff" fillOpacity="0.22" />
-      <circle cx="13" cy="18" r="3" fill="#ffffff" />
-      <circle cx="14.2" cy="16.8" r="1" fill={colors.primary} />
-
-      {/* Left Sync Connection Notch */}
+      {/* Optical Projector Projection Wedge (Video stream output) */}
       <path
-        d="M 3 14.5 C 4.8 14.5 5.8 15.6 5.8 18 C 5.8 20.4 4.8 21.5 3 21.5"
+        d="M 26 14.5 L 36 8.5 C 37.2 7.8 38 8.6 38 10 L 38 30 C 38 31.4 37.2 32.2 36 31.5 L 26 25.5 Z"
+        fill={`url(#${gradId})`}
+        stroke="rgba(255, 255, 255, 0.2)"
+        strokeWidth="1"
+      />
+
+      {/* Left Synchronizing Flow Arc (S-Curve) */}
+      <path
+        d="M 3 13.5 C 6 13.5 8 15 8 18 C 8 21 6 22.5 3 22.5"
         stroke="#ffffff"
-        strokeWidth="1.75"
+        strokeWidth="2.2"
         strokeLinecap="round"
         fill="none"
-        strokeOpacity="0.85"
+        strokeOpacity="0.95"
       />
 
-      {/* Forward Video Projection / Sync Ray */}
-      <path
-        d="M 24 13 L 31 8.8 C 32 8.2 33 8.9 33 10.2 L 33 25.8 C 33 27.1 32 27.8 31 27.2 L 24 23 Z"
-        fill={`url(#sm-grad-${theme}-${size})`}
-      />
+      {/* Synchronized Core Lens Ring (Multi-layered aperture) */}
+      <circle cx="14" cy="20" r="6.5" fill="#090a10" fillOpacity="0.45" stroke="#ffffff" strokeWidth="1.5" />
+      <circle cx="14" cy="20" r="4" fill={`url(#${glowGradId})`} />
+      <circle cx="14" cy="20" r="2" fill="#ffffff" />
+
+      {/* Optical Specular Glint */}
+      <circle cx="15.8" cy="18.2" r="1" fill="#ffffff" fillOpacity="0.9" />
 
       {/* Forward Sync Pulse Node */}
-      <circle cx="28.5" cy="18" r="1.3" fill="#ffffff" fillOpacity="0.85" />
+      <circle cx="33" cy="20" r="1.8" fill="#ffffff" />
+      <circle cx="33" cy="20" r="3.2" stroke="#ffffff" strokeWidth="0.75" strokeOpacity="0.6" />
     </svg>
   );
 
@@ -131,8 +153,8 @@ export const SyncMeetLogo = ({
         style={{
           fontFamily: "'Plus Jakarta Sans', sans-serif",
           fontSize: `${pixelSizes.font}px`,
-          fontWeight: "700",
-          letterSpacing: "-0.02em",
+          fontWeight: "800",
+          letterSpacing: "-0.03em",
           color: colors.text,
           userSelect: "none",
           display: "inline-flex",
@@ -141,7 +163,16 @@ export const SyncMeetLogo = ({
         }}
         {...props}
       >
-        Sync<span style={{ color: colors.textSecondary }}>Meet</span>
+        Sync
+        <span
+          style={{
+            background: "linear-gradient(135deg, #5865f2 0%, #00b0f4 100%)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+          }}
+        >
+          Meet
+        </span>
       </span>
     );
   }
@@ -165,13 +196,25 @@ export const SyncMeetLogo = ({
         style={{
           fontFamily: "'Plus Jakarta Sans', sans-serif",
           fontSize: `${pixelSizes.font}px`,
-          fontWeight: "700",
-          letterSpacing: "-0.02em",
+          fontWeight: "800",
+          letterSpacing: "-0.03em",
           color: colors.text,
           lineHeight: 1,
+          display: "inline-flex",
+          alignItems: "center",
         }}
       >
-        Sync<span style={{ color: colors.textSecondary }}>Meet</span>
+        Sync
+        <span
+          style={{
+            background: "linear-gradient(135deg, #5865f2 0%, #00b0f4 100%)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            marginLeft: "1px",
+          }}
+        >
+          Meet
+        </span>
       </span>
     </div>
   );

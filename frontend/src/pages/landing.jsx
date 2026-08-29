@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Navbar from "../components/layout/Navbar";
 import SyncMeetLogo from "../components/ui/SyncMeetLogo";
 import KineticMatrix from "../components/ui/KineticMatrix";
+import SpotlightCard from "../components/ui/SpotlightCard";
 import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
 import Input from "../components/ui/Input";
@@ -100,7 +101,7 @@ export const Landing = () => {
             transform: "translateX(-50%)",
             width: "800px",
             height: "450px",
-            background: "radial-gradient(ellipse at 50% 20%, rgba(88, 101, 242, 0.20) 0%, transparent 65%)",
+            background: "radial-gradient(ellipse at 50% 20%, rgba(88, 101, 242, 0.22) 0%, transparent 65%)",
             pointerEvents: "none",
             zIndex: 1,
           }}
@@ -130,7 +131,7 @@ export const Landing = () => {
         >
           {/* Eyebrow */}
           <div style={{ display: "inline-flex", marginBottom: "18px" }}>
-            <Badge variant="blurple">
+            <Badge variant="blurple" dot={true}>
               BROWSER-BASED • DIRECT P2P • REAL-TIME
             </Badge>
           </div>
@@ -250,13 +251,13 @@ export const Landing = () => {
           onMouseLeave={handleMouseLeave}
           style={{
             background: "var(--surface-card)",
-            border: "var(--border-subtle)",
+            border: "1px solid rgba(255, 255, 255, 0.12)",
             borderRadius: "var(--radius-lg)",
             overflow: "hidden",
             boxShadow: isHovered
-              ? "0 24px 60px rgba(0, 0, 0, 0.75), 0 0 20px rgba(88, 101, 242, 0.18)"
+              ? "0 28px 70px rgba(0, 0, 0, 0.8), 0 0 28px rgba(88, 101, 242, 0.22)"
               : "var(--shadow-floating)",
-            transform: `rotateX(${tilt.x}deg) rotateY(${tilt.y}deg) translateZ(${isHovered ? "12px" : "0px"})`,
+            transform: `rotateX(${tilt.x}deg) rotateY(${tilt.y}deg) translateZ(${isHovered ? "14px" : "0px"})`,
             transition: isHovered ? "transform 100ms ease-out, box-shadow 200ms ease" : "transform 400ms var(--ease-spring), box-shadow 400ms ease",
             transformStyle: "preserve-3d",
           }}
@@ -269,7 +270,7 @@ export const Landing = () => {
               justifyContent: "space-between",
               padding: "12px 20px",
               background: "var(--surface-indigo)",
-              borderBottom: "var(--border-subtle)",
+              borderBottom: "1px solid rgba(255, 255, 255, 0.08)",
             }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
@@ -294,13 +295,14 @@ export const Landing = () => {
                 marginBottom: "20px",
               }}
             >
-              {/* Tile 1 (Speaking with subtle green ring) */}
+              {/* Tile 1 (Speaking with subtle green ring & audio waveform) */}
               <div
                 style={{
                   height: "150px",
                   background: "#131625",
                   borderRadius: "var(--radius-sm)",
                   border: "1.5px solid var(--accent-green)",
+                  boxShadow: "0 0 14px rgba(34, 197, 94, 0.25)",
                   display: "flex",
                   flexDirection: "column",
                   alignItems: "center",
@@ -320,10 +322,27 @@ export const Landing = () => {
                     justifyContent: "center",
                     fontSize: "16px",
                     fontWeight: "700",
+                    marginBottom: "8px",
                   }}
                 >
                   AK
                 </div>
+
+                {/* Animated Speaking Wave Bars */}
+                <div style={{ display: "flex", gap: "3px", alignItems: "center", height: "14px" }}>
+                  {[8, 14, 18, 12, 16, 10].map((h, i) => (
+                    <span
+                      key={i}
+                      style={{
+                        width: "2px",
+                        height: `${h}px`,
+                        background: "var(--accent-green)",
+                        borderRadius: "1px",
+                      }}
+                    />
+                  ))}
+                </div>
+
                 <div
                   style={{
                     position: "absolute",
@@ -348,7 +367,7 @@ export const Landing = () => {
                   height: "150px",
                   background: "#10121d",
                   borderRadius: "var(--radius-sm)",
-                  border: "var(--border-subtle)",
+                  border: "1px solid rgba(255, 255, 255, 0.08)",
                   display: "flex",
                   flexDirection: "column",
                   alignItems: "center",
@@ -396,7 +415,7 @@ export const Landing = () => {
                   height: "150px",
                   background: "#10121d",
                   borderRadius: "var(--radius-sm)",
-                  border: "var(--border-subtle)",
+                  border: "1px solid rgba(255, 255, 255, 0.08)",
                   display: "flex",
                   flexDirection: "column",
                   alignItems: "center",
@@ -444,7 +463,7 @@ export const Landing = () => {
                   height: "150px",
                   background: "#10121d",
                   borderRadius: "var(--radius-sm)",
-                  border: "var(--border-subtle)",
+                  border: "1px solid rgba(255, 255, 255, 0.08)",
                   display: "flex",
                   flexDirection: "column",
                   alignItems: "center",
@@ -496,7 +515,7 @@ export const Landing = () => {
                 justifyContent: "center",
                 gap: "10px",
                 background: "var(--surface-card)",
-                border: "var(--border-subtle)",
+                border: "1px solid rgba(255, 255, 255, 0.08)",
                 padding: "8px 18px",
                 borderRadius: "var(--radius-pill)",
                 width: "fit-content",
@@ -526,7 +545,7 @@ export const Landing = () => {
         </div>
       </section>
 
-      {/* ─── 3. Structured Feature Storytelling ─── */}
+      {/* ─── 3. Structured Feature Storytelling with Interactive 3D SpotlightCards ─── */}
       <section style={{ padding: "16px 24px 64px 24px", maxWidth: "1080px", margin: "0 auto", width: "100%" }}>
         <div style={{ marginBottom: "36px" }}>
           <span style={{ fontSize: "12px", fontWeight: "700", letterSpacing: "0.06em", color: "var(--primary-blurple)", textTransform: "uppercase" }}>
@@ -538,8 +557,13 @@ export const Landing = () => {
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "20px" }}>
-          {/* Card 01 */}
-          <Card variant="surface" style={{ padding: "28px" }}>
+          {/* Card 01 with 3D Spotlight */}
+          <SpotlightCard
+            spotlightColor="rgba(88, 101, 242, 0.22)"
+            borderColor="rgba(88, 101, 242, 0.45)"
+            tiltDegree={6}
+            style={{ padding: "28px" }}
+          >
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px" }}>
               <span style={{ fontSize: "13px", fontWeight: "800", fontFamily: "var(--font-mono)", color: "var(--primary-blurple)" }}>
                 01
@@ -552,12 +576,17 @@ export const Landing = () => {
             <p style={{ color: "var(--text-secondary)", fontSize: "14px", lineHeight: "1.6" }}>
               Create or join a meeting room in one click directly from any modern web browser. No accounts or software downloads required.
             </p>
-          </Card>
+          </SpotlightCard>
 
-          {/* Card 02 */}
-          <Card variant="surface" style={{ padding: "28px" }}>
+          {/* Card 02 with 3D Spotlight */}
+          <SpotlightCard
+            spotlightColor="rgba(0, 176, 244, 0.22)"
+            borderColor="rgba(0, 176, 244, 0.45)"
+            tiltDegree={6}
+            style={{ padding: "28px" }}
+          >
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px" }}>
-              <span style={{ fontSize: "13px", fontWeight: "800", fontFamily: "var(--font-mono)", color: "var(--primary-blurple)" }}>
+              <span style={{ fontSize: "13px", fontWeight: "800", fontFamily: "var(--font-mono)", color: "var(--accent-cyan)" }}>
                 02
               </span>
               <HubIcon style={{ color: "var(--text-muted)", fontSize: "22px" }} />
@@ -568,12 +597,17 @@ export const Landing = () => {
             <p style={{ color: "var(--text-secondary)", fontSize: "14px", lineHeight: "1.6" }}>
               Real-time WebRTC mesh architecture connects participants directly, ensuring lightweight streaming with minimal intermediary latency.
             </p>
-          </Card>
+          </SpotlightCard>
 
-          {/* Card 03 */}
-          <Card variant="surface" style={{ padding: "28px" }}>
+          {/* Card 03 with 3D Spotlight */}
+          <SpotlightCard
+            spotlightColor="rgba(34, 197, 94, 0.22)"
+            borderColor="rgba(34, 197, 94, 0.45)"
+            tiltDegree={6}
+            style={{ padding: "28px" }}
+          >
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px" }}>
-              <span style={{ fontSize: "13px", fontWeight: "800", fontFamily: "var(--font-mono)", color: "var(--primary-blurple)" }}>
+              <span style={{ fontSize: "13px", fontWeight: "800", fontFamily: "var(--font-mono)", color: "var(--accent-green)" }}>
                 03
               </span>
               <SecurityIcon style={{ color: "var(--text-muted)", fontSize: "22px" }} />
@@ -584,18 +618,18 @@ export const Landing = () => {
             <p style={{ color: "var(--text-secondary)", fontSize: "14px", lineHeight: "1.6" }}>
               Optimized for interactive team discussions, pair programming, and small group huddles up to 6 participants.
             </p>
-          </Card>
+          </SpotlightCard>
         </div>
       </section>
 
-      {/* ─── 4. Technology & Architecture Badges ─── */}
+      {/* ─── 4. Technology & Architecture 3D Spotlight Showcase ─── */}
       <section style={{ padding: "0 24px 64px 24px", maxWidth: "1080px", margin: "0 auto", width: "100%" }}>
-        <div
+        <SpotlightCard
+          spotlightColor="rgba(88, 101, 242, 0.2)"
+          borderColor="rgba(88, 101, 242, 0.35)"
+          tiltDegree={3}
           style={{
-            background: "var(--surface-card)",
-            border: "var(--border-subtle)",
-            borderRadius: "var(--radius-md)",
-            padding: "24px 28px",
+            padding: "26px 30px",
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
@@ -604,7 +638,7 @@ export const Landing = () => {
           }}
         >
           <div>
-            <span style={{ fontSize: "14px", fontWeight: "700", color: "var(--text-white)", display: "block" }}>
+            <span style={{ fontSize: "15px", fontWeight: "700", color: "var(--text-white)", display: "block" }}>
               Built on modern browser technologies
             </span>
             <span style={{ fontSize: "13px", color: "var(--text-muted)" }}>
@@ -618,18 +652,16 @@ export const Landing = () => {
             <Badge variant="neutral">P2P Streams</Badge>
             <Badge variant="neutral">JWT Auth</Badge>
           </div>
-        </div>
+        </SpotlightCard>
       </section>
 
       {/* ─── 5. Restrained Final CTA ─── */}
       <section style={{ padding: "0 24px 64px 24px", maxWidth: "780px", margin: "0 auto", width: "100%", textAlign: "center" }}>
-        <div
-          style={{
-            background: "var(--surface-card)",
-            border: "var(--border-subtle)",
-            borderRadius: "var(--radius-lg)",
-            padding: "44px 32px",
-          }}
+        <SpotlightCard
+          spotlightColor="rgba(88, 101, 242, 0.25)"
+          borderColor="rgba(88, 101, 242, 0.45)"
+          tiltDegree={4}
+          style={{ padding: "48px 32px" }}
         >
           <h2 style={{ fontSize: "26px", fontWeight: "800", letterSpacing: "-0.02em", color: "var(--text-white)", marginBottom: "10px" }}>
             Ready for your next meeting?
@@ -646,13 +678,13 @@ export const Landing = () => {
               <span>Create Free Account</span>
             </Button>
           </div>
-        </div>
+        </SpotlightCard>
       </section>
 
       {/* ─── 6. Clean Minimalist Footer ─── */}
       <footer
         style={{
-          borderTop: "var(--border-subtle)",
+          borderTop: "1px solid rgba(255, 255, 255, 0.08)",
           padding: "32px 32px 24px 32px",
           background: "var(--canvas-dark)",
           marginTop: "auto",
