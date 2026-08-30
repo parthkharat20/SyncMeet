@@ -84,7 +84,7 @@ export const History = () => {
 
       <Navbar />
 
-      <main style={{ flex: 1, padding: "32px 24px", maxWidth: "960px", margin: "0 auto", width: "100%", position: "relative", zIndex: 10 }}>
+      <main style={{ flex: 1, padding: "88px 24px 40px 24px", maxWidth: "960px", margin: "0 auto", width: "100%", position: "relative", zIndex: 10 }}>
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "28px", flexWrap: "wrap", gap: "14px" }} className="animate-entrance">
           <div>

@@ -100,7 +100,7 @@ export const Landing = () => {
 
       <main style={{ position: "relative", zIndex: 10, flex: 1, display: "flex", flexDirection: "column" }}>
         {/* ─── 1. Cinematic Full-Page Hero Section ─── */}
-        <section style={{ padding: "52px 24px 36px 24px", maxWidth: "1080px", margin: "0 auto", width: "100%", textAlign: "center" }}>
+        <section style={{ padding: "96px 24px 36px 24px", maxWidth: "1080px", margin: "0 auto", width: "100%", textAlign: "center" }}>
           <div className="animate-entrance" style={{ maxWidth: "840px", margin: "0 auto" }}>
             {/* Eyebrow */}
             <div style={{ display: "inline-flex", marginBottom: "18px" }}>

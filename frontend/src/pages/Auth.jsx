@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import Navbar from "../components/layout/Navbar";
-import Footer from "../components/layout/Footer";
 import SyncMeetLogo from "../components/ui/SyncMeetLogo";
 import SpotlightCard from "../components/ui/SpotlightCard";
 import Alert from "../components/ui/Alert";
@@ -118,7 +117,7 @@ export const Auth = () => {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          padding: "40px 24px",
+          padding: "92px 24px 48px 24px",
           position: "relative",
           zIndex: 10,
           maxWidth: "1080px",
@@ -427,8 +426,6 @@ export const Auth = () => {
           </div>
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 };

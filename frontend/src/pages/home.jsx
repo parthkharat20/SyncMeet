@@ -149,7 +149,7 @@ export const Home = () => {
 
       <Navbar />
 
-      <main style={{ flex: 1, padding: "32px 24px", maxWidth: "1080px", margin: "0 auto", width: "100%", position: "relative", zIndex: 10 }}>
+      <main style={{ flex: 1, padding: "88px 24px 40px 24px", maxWidth: "1080px", margin: "0 auto", width: "100%", position: "relative", zIndex: 10 }}>
         {/* Welcome Header Banner */}
         <SpotlightCard
           spotlightColor="rgba(88, 101, 242, 0.18)"
