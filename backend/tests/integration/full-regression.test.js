@@ -15,6 +15,7 @@ console.log("==========================================================\n");
 
 // Spawn backend server process
 const backend = spawn("node", [appPath], {
+  cwd: path.resolve(__dirname, "../.."),
   env: { ...process.env, PORT: "8000" },
   stdio: ["pipe", "pipe", "pipe"],
 });
@@ -160,6 +161,7 @@ const runSuite = async () => {
 
   console.log("\n[P8 BOOT RESTART] Restarting Backend Server process...");
   const restartedBackend = spawn("node", [appPath], {
+    cwd: path.resolve(__dirname, "../.."),
     env: { ...process.env, PORT: "8000" },
     stdio: ["pipe", "pipe", "pipe"],
   });

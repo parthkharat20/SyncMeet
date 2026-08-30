@@ -2,12 +2,13 @@ import React, { useState } from "react";
 import Input from "../../ui/Input";
 import Button from "../../ui/Button";
 import Alert from "../../ui/Alert";
+import GoogleAuthButton from "./GoogleAuthButton";
 import PasswordStrengthBar from "./PasswordStrengthBar";
 import BadgeIcon from "@mui/icons-material/Badge";
 import PersonIcon from "@mui/icons-material/Person";
 import LockIcon from "@mui/icons-material/Lock";
 
-export const RegisterForm = ({ onSubmit, loading, externalError }) => {
+export const RegisterForm = ({ onSubmit, onGoogleSuccess, loading, externalError }) => {
   const [name, setName] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -34,57 +35,80 @@ export const RegisterForm = ({ onSubmit, loading, externalError }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
       {externalError && <Alert variant="error">{externalError}</Alert>}
 
-      <Input
-        label="Full Name"
-        icon={BadgeIcon}
-        placeholder="e.g. Alex Morgan"
-        value={name}
-        onChange={(e) => {
-          setName(e.target.value);
-          if (fieldErrors.name) setFieldErrors((prev) => ({ ...prev, name: "" }));
-        }}
-        error={fieldErrors.name}
-      />
+      {/* ── 1-Click Google OAuth Sign-Up ── */}
+      {onGoogleSuccess && (
+        <>
+          <GoogleAuthButton
+            onGoogleSuccess={onGoogleSuccess}
+            text="Sign Up with Google"
+            disabled={loading}
+          />
 
-      <Input
-        label="Username"
-        icon={PersonIcon}
-        placeholder="Choose a unique username"
-        value={username}
-        onChange={(e) => {
-          setUsername(e.target.value);
-          if (fieldErrors.username) setFieldErrors((prev) => ({ ...prev, username: "" }));
-        }}
-        error={fieldErrors.username}
-        helperText="At least 3 alphanumeric characters"
-        autoComplete="username"
-      />
+          {/* Elegant Divider */}
+          <div style={{ display: "flex", alignItems: "center", gap: "14px", margin: "2px 0" }}>
+            <div style={{ flex: 1, height: "1px", background: "rgba(255, 255, 255, 0.1)" }} />
+            <span style={{ fontSize: "12px", fontWeight: "600", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+              Or sign up with username
+            </span>
+            <div style={{ flex: 1, height: "1px", background: "rgba(255, 255, 255, 0.1)" }} />
+          </div>
+        </>
+      )}
 
-      <div>
+      {/* ── Credentials Form ── */}
+      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
         <Input
-          label="Password"
-          icon={LockIcon}
-          type="password"
-          passwordToggle={true}
-          placeholder="Create a secure password"
-          value={password}
+          label="Full Name"
+          icon={BadgeIcon}
+          placeholder="e.g. Alex Morgan"
+          value={name}
           onChange={(e) => {
-            setPassword(e.target.value);
-            if (fieldErrors.password) setFieldErrors((prev) => ({ ...prev, password: "" }));
+            setName(e.target.value);
+            if (fieldErrors.name) setFieldErrors((prev) => ({ ...prev, name: "" }));
           }}
-          error={fieldErrors.password}
-          autoComplete="new-password"
+          error={fieldErrors.name}
         />
-        <PasswordStrengthBar password={password} />
-      </div>
 
-      <Button type="submit" variant="primary" size="lg" fullWidth={true} loading={loading}>
-        Create Free Account
-      </Button>
-    </form>
+        <Input
+          label="Username"
+          icon={PersonIcon}
+          placeholder="Choose a unique username"
+          value={username}
+          onChange={(e) => {
+            setUsername(e.target.value);
+            if (fieldErrors.username) setFieldErrors((prev) => ({ ...prev, username: "" }));
+          }}
+          error={fieldErrors.username}
+          helperText="At least 3 alphanumeric characters"
+          autoComplete="username"
+        />
+
+        <div>
+          <Input
+            label="Password"
+            icon={LockIcon}
+            type="password"
+            passwordToggle={true}
+            placeholder="Create a secure password"
+            value={password}
+            onChange={(e) => {
+              setPassword(e.target.value);
+              if (fieldErrors.password) setFieldErrors((prev) => ({ ...prev, password: "" }));
+            }}
+            error={fieldErrors.password}
+            autoComplete="new-password"
+          />
+          <PasswordStrengthBar password={password} />
+        </div>
+
+        <Button type="submit" variant="primary" size="lg" fullWidth={true} loading={loading}>
+          Create Free Account
+        </Button>
+      </form>
+    </div>
   );
 };
 

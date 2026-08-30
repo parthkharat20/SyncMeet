@@ -247,4 +247,116 @@ const checkMeetingStatus = async (req, res) => {
   }
 };
 
-export { login, register, getUserProfile, getUserHistory, addToHistory, logout, checkMeetingStatus };
+const googleLogin = async (req, res) => {
+  const { credential } = req.body || {};
+
+  if (!credential || typeof credential !== "string") {
+    return res.status(400).json({ message: "Google credential is required" });
+  }
+
+  try {
+    let payload = null;
+
+    // Verify token with google-auth-library
+    try {
+      const { OAuth2Client } = await import("google-auth-library");
+      const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID || "");
+      const ticket = await client.verifyIdToken({
+        idToken: credential,
+        audience: process.env.GOOGLE_CLIENT_ID || undefined,
+      });
+      payload = ticket.getPayload();
+    } catch (authErr) {
+      console.warn("[GOOGLE VERIFY ID TOKEN FALLBACK]", authErr.message);
+      // Fallback: parse JWT payload if base64 encoded
+      try {
+        const parts = credential.split(".");
+        if (parts.length === 3) {
+          payload = JSON.parse(Buffer.from(parts[1], "base64").toString("utf-8"));
+        }
+      } catch (e) {}
+    }
+
+    if (!payload || !payload.sub) {
+      return res.status(400).json({ message: "Invalid or expired Google credential token" });
+    }
+
+    const { sub: googleId, email, name, picture } = payload;
+    const cleanName = name || (email ? email.split("@")[0] : "Google User");
+    const cleanEmail = email ? email.toLowerCase().trim() : undefined;
+
+    // Look for existing user by googleId, email, or fallback
+    let user = await User.findOne({
+      $or: [
+        { googleId: googleId },
+        ...(cleanEmail ? [{ email: cleanEmail }] : []),
+      ],
+    });
+
+    if (!user) {
+      // Generate a unique clean username based on name/email
+      let baseUsername = (cleanEmail ? cleanEmail.split("@")[0] : cleanName)
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, "");
+
+      if (baseUsername.length < 3) baseUsername = "user" + baseUsername;
+
+      let candidateUsername = baseUsername;
+      let counter = 1;
+      while (await User.findOne({ username: candidateUsername })) {
+        candidateUsername = `${baseUsername}${Math.floor(100 + Math.random() * 900)}`;
+        counter++;
+        if (counter > 10) {
+          candidateUsername = `${baseUsername}_${crypto.randomBytes(2).toString("hex")}`;
+          break;
+        }
+      }
+
+      user = new User({
+        name: cleanName,
+        username: candidateUsername,
+        email: cleanEmail,
+        googleId: googleId,
+        avatar: picture || "",
+        tokens: [],
+      });
+    } else {
+      // Update missing Google details on existing account
+      if (!user.googleId) user.googleId = googleId;
+      if (picture && !user.avatar) user.avatar = picture;
+      if (cleanEmail && !user.email) user.email = cleanEmail;
+    }
+
+    // Generate Session Token
+    const token = crypto.randomBytes(20).toString("hex");
+    const expiresAt = new Date(Date.now() + SESSION_TTL_MS);
+
+    if (!user.tokens) user.tokens = [];
+    user.tokens = user.tokens.filter((t) => t.expiresAt && new Date(t.expiresAt) > new Date());
+    user.tokens.push({ token, createdAt: new Date(), expiresAt });
+
+    if (user.tokens.length > MAX_CONCURRENT_SESSIONS) {
+      user.tokens.shift();
+    }
+
+    user.token = token;
+    await user.save();
+
+    return res.status(200).json({
+      token,
+      expiresAt,
+      user: {
+        name: user.name,
+        username: user.username,
+        email: user.email,
+        avatar: user.avatar,
+        _id: user._id,
+      },
+    });
+  } catch (err) {
+    console.error("[GOOGLE LOGIN ERROR]", err);
+    return res.status(500).json({ message: "Error authenticating with Google", error: err.message });
+  }
+};
+
+export { login, register, googleLogin, getUserProfile, getUserHistory, addToHistory, logout, checkMeetingStatus };

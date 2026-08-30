@@ -43,6 +43,17 @@ export const AuthProvider = ({ children }) => {
     return res.data;
   };
 
+  const handleGoogleLogin = async (credential) => {
+    const res = await api.post("/google-login", { credential });
+    if (res.data.token) {
+      localStorage.setItem("token", res.data.token);
+      if (res.data.user) {
+        setUserData(res.data.user);
+      }
+    }
+    return res.data;
+  };
+
   const handleLogout = async () => {
     try {
       await api.post("/logout");
@@ -69,6 +80,7 @@ export const AuthProvider = ({ children }) => {
       value={{
         handleRegister,
         handleLogin,
+        handleGoogleLogin,
         handleLogout,
         getHistoryOfUser,
         addToUserHistory,

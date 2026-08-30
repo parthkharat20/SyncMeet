@@ -6,6 +6,7 @@ import {
   getUserHistory,
   getUserProfile,
   login,
+  googleLogin,
   logout,
   register
 } from "../controllers/user.controller.js";
@@ -23,6 +24,7 @@ const loginLimiter = rateLimit({
 });
 
 router.post("/login", loginLimiter, login);
+router.post("/google-login", googleLogin);
 router.post("/register", register);
 router.get("/profile", authMiddleware, getUserProfile);
 router.post("/add_to_activity", authMiddleware, addToHistory);

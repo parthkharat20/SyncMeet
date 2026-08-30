@@ -20,7 +20,7 @@ import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 export const Auth = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { handleLogin, handleRegister, userData } = useAuth();
+  const { handleLogin, handleRegister, handleGoogleLogin, userData } = useAuth();
 
   const [activeTab, setActiveTab] = useState(searchParams.get("tab") === "register" ? "register" : "login");
   const [loading, setLoading] = useState(false);
@@ -41,6 +41,22 @@ export const Auth = () => {
       setActiveTab("login");
     }
   }, [searchParams]);
+
+  const onGoogleSuccess = async (credential) => {
+    setLoading(true);
+    setErrorMsg("");
+    setSuccessMsg("");
+    try {
+      await handleGoogleLogin(credential);
+      navigate("/home");
+    } catch (err) {
+      console.error("[GOOGLE AUTH ERROR]", err);
+      const apiMsg = err.response?.data?.message;
+      setErrorMsg(apiMsg || "Failed to authenticate with Google. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const onLoginSubmit = async (username, password) => {
     setLoading(true);
@@ -393,9 +409,9 @@ export const Auth = () => {
               )}
 
               {activeTab === "login" ? (
-                <LoginForm onSubmit={onLoginSubmit} loading={loading} externalError={errorMsg} />
+                <LoginForm onSubmit={onLoginSubmit} onGoogleSuccess={onGoogleSuccess} loading={loading} externalError={errorMsg} />
               ) : (
-                <RegisterForm onSubmit={onRegisterSubmit} loading={loading} externalError={errorMsg} />
+                <RegisterForm onSubmit={onRegisterSubmit} onGoogleSuccess={onGoogleSuccess} loading={loading} externalError={errorMsg} />
               )}
 
               {/* Quick Switch */}
