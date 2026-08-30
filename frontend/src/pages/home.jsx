@@ -4,6 +4,7 @@ import { useAuth } from "../hooks/useAuth";
 import withAuth from "../utils/withAuth";
 import api from "../services/api";
 import Navbar from "../components/layout/Navbar";
+import Footer from "../components/layout/Footer";
 import SpotlightCard from "../components/ui/SpotlightCard";
 import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
@@ -431,6 +432,8 @@ export const Home = () => {
           )}
         </div>
       </main>
+
+      <Footer />
     </div>
   );
 };

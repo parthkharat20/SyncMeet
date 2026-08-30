@@ -1,6 +1,7 @@
 import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/layout/Navbar";
+import Footer from "../components/layout/Footer";
 import SyncMeetLogo from "../components/ui/SyncMeetLogo";
 import ImageStreamHero from "../components/ui/ImageStreamHero";
 import SpotlightCard from "../components/ui/SpotlightCard";
@@ -663,43 +664,8 @@ export const Landing = () => {
         </section>
       </main>
 
-      {/* ─── 6. Clean Minimalist Footer ─── */}
-      <footer
-        style={{
-          borderTop: "1px solid rgba(255, 255, 255, 0.08)",
-          padding: "32px 32px 24px 32px",
-          background: "rgba(9, 10, 16, 0.85)",
-          backdropFilter: "blur(12px)",
-          WebkitBackdropFilter: "blur(12px)",
-          marginTop: "auto",
-          position: "relative",
-          zIndex: 10,
-        }}
-      >
-        <div
-          style={{
-            maxWidth: "1080px",
-            margin: "0 auto",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            flexWrap: "wrap",
-            gap: "20px",
-          }}
-        >
-          <SyncMeetLogo size="sm" variant="full" />
-
-          <div style={{ display: "flex", gap: "20px", fontSize: "13px", color: "var(--text-secondary)" }}>
-            <span style={{ cursor: "pointer" }} onClick={() => navigate("/auth")}>Sign In</span>
-            <span style={{ cursor: "pointer" }} onClick={() => navigate("/home")}>Dashboard</span>
-            <span style={{ cursor: "pointer" }} onClick={() => navigate("/history")}>History</span>
-          </div>
-
-          <span style={{ fontSize: "12px", color: "var(--text-muted)" }}>
-            © {new Date().getFullYear()} SyncMeet. All rights reserved.
-          </span>
-        </div>
-      </footer>
+      {/* ─── Modern Animated Footer ─── */}
+      <Footer />
     </div>
   );
 };

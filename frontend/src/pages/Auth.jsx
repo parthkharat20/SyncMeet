@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import Navbar from "../components/layout/Navbar";
+import Footer from "../components/layout/Footer";
 import SyncMeetLogo from "../components/ui/SyncMeetLogo";
 import SpotlightCard from "../components/ui/SpotlightCard";
 import Alert from "../components/ui/Alert";
@@ -426,6 +427,8 @@ export const Auth = () => {
           </div>
         </div>
       </main>
+
+      <Footer />
     </div>
   );
 };

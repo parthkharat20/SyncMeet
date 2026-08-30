@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import withAuth from "../utils/withAuth";
 import Navbar from "../components/layout/Navbar";
+import Footer from "../components/layout/Footer";
 import SpotlightCard from "../components/ui/SpotlightCard";
 import ImageStreamHero from "../components/ui/ImageStreamHero";
 import Card from "../components/ui/Card";
@@ -264,6 +265,8 @@ export const History = () => {
           </div>
         )}
       </main>
+
+      <Footer />
     </div>
   );
 };
