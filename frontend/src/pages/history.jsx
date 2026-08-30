@@ -4,7 +4,7 @@ import { useAuth } from "../hooks/useAuth";
 import withAuth from "../utils/withAuth";
 import Navbar from "../components/layout/Navbar";
 import SpotlightCard from "../components/ui/SpotlightCard";
-import SyncMeetAtmosphere from "../components/ui/SyncMeetAtmosphere";
+import ImageStreamHero from "../components/ui/ImageStreamHero";
 import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
 import Badge from "../components/ui/Badge";
@@ -63,9 +63,23 @@ export const History = () => {
   };
 
   return (
-    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "var(--canvas)", position: "relative" }}>
-      {/* ─── Global Full-Page Immersive Background Atmosphere ─── */}
-      <SyncMeetAtmosphere variant="history" />
+    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "var(--canvas)", position: "relative", overflow: "hidden" }}>
+      {/* ─── Global Full-Screen 3D Perspective Stream Corridor ─── */}
+      <ImageStreamHero
+        speed={24}
+        axis={50}
+        opacity={0.5}
+        vignette={true}
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          width: "100vw",
+          height: "100vh",
+          pointerEvents: "none",
+          zIndex: 0,
+        }}
+      />
 
       <Navbar />
 

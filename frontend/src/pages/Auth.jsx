@@ -6,7 +6,7 @@ import SyncMeetLogo from "../components/ui/SyncMeetLogo";
 import SpotlightCard from "../components/ui/SpotlightCard";
 import Alert from "../components/ui/Alert";
 import Badge from "../components/ui/Badge";
-import SyncMeetAtmosphere from "../components/ui/SyncMeetAtmosphere";
+import ImageStreamHero from "../components/ui/ImageStreamHero";
 import LoginForm from "../components/features/auth/LoginForm";
 import RegisterForm from "../components/features/auth/RegisterForm";
 
@@ -92,10 +92,24 @@ export const Auth = () => {
 
   return (
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "var(--canvas)", position: "relative", overflow: "hidden" }}>
-      <Navbar />
+      {/* ─── Global Full-Screen 3D Perspective Stream Corridor ─── */}
+      <ImageStreamHero
+        speed={22}
+        axis={50}
+        opacity={0.6}
+        vignette={true}
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          width: "100vw",
+          height: "100vh",
+          pointerEvents: "none",
+          zIndex: 0,
+        }}
+      />
 
-      {/* ─── Global Full-Page Immersive Background Atmosphere ─── */}
-      <SyncMeetAtmosphere variant="auth" />
+      <Navbar />
 
       <main
         style={{

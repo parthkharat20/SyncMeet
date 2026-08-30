@@ -2,7 +2,7 @@ import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/layout/Navbar";
 import SyncMeetLogo from "../components/ui/SyncMeetLogo";
-import SyncMeetAtmosphere from "../components/ui/SyncMeetAtmosphere";
+import ImageStreamHero from "../components/ui/ImageStreamHero";
 import SpotlightCard from "../components/ui/SpotlightCard";
 import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
@@ -40,7 +40,6 @@ export const Landing = () => {
     const centerX = rect.width / 2;
     const centerY = rect.height / 2;
 
-    // Subtle 3D tilt angles (max +/- 5 deg)
     const rotateX = ((y - centerY) / centerY) * -4.5;
     const rotateY = ((x - centerX) / centerX) * 4.5;
 
@@ -77,17 +76,31 @@ export const Landing = () => {
   };
 
   return (
-    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "var(--canvas)", position: "relative" }}>
-      {/* ─── Global Full-Page Immersive Background Atmosphere ─── */}
-      <SyncMeetAtmosphere variant="landing" />
+    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "var(--canvas)", position: "relative", overflow: "hidden" }}>
+      {/* ─── Global Full-Screen 3D Perspective Stream Corridor ─── */}
+      <ImageStreamHero
+        speed={20}
+        axis={50}
+        opacity={0.65}
+        vignette={true}
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          width: "100vw",
+          height: "100vh",
+          pointerEvents: "none",
+          zIndex: 0,
+        }}
+      />
 
       {/* ─── Global Navigation ─── */}
       <Navbar />
 
       <main style={{ position: "relative", zIndex: 10, flex: 1, display: "flex", flexDirection: "column" }}>
         {/* ─── 1. Cinematic Full-Page Hero Section ─── */}
-        <section style={{ padding: "48px 24px 32px 24px", maxWidth: "1080px", margin: "0 auto", width: "100%", textAlign: "center" }}>
-          <div className="animate-entrance" style={{ maxWidth: "800px", margin: "0 auto" }}>
+        <section style={{ padding: "52px 24px 36px 24px", maxWidth: "1080px", margin: "0 auto", width: "100%", textAlign: "center" }}>
+          <div className="animate-entrance" style={{ maxWidth: "840px", margin: "0 auto" }}>
             {/* Eyebrow */}
             <div style={{ display: "inline-flex", marginBottom: "18px" }}>
               <Badge variant="blurple" dot={true}>
@@ -107,7 +120,8 @@ export const Landing = () => {
                 marginBottom: "16px",
               }}
             >
-              Meet. Talk.{" "}
+              Your meetings,
+              <br />
               <span
                 style={{
                   background: "linear-gradient(135deg, #5865f2 0%, #00b0f4 100%)",
@@ -115,7 +129,7 @@ export const Landing = () => {
                   WebkitTextFillColor: "transparent",
                 }}
               >
-                Collaborate.
+                front and centre.
               </span>
             </h1>
 
@@ -129,7 +143,7 @@ export const Landing = () => {
                 lineHeight: "1.55",
               }}
             >
-              High-quality video meetings without complicated setup. Start a room in one click and connect directly with your team.
+              High-quality WebRTC video meetings without complicated setup. Start a room in one click and connect directly with your team.
             </p>
 
             {/* Direct Action Controls */}
@@ -175,7 +189,7 @@ export const Landing = () => {
                 flexWrap: "wrap",
                 gap: "12px 18px",
                 padding: "8px 18px",
-                background: "rgba(15, 17, 26, 0.85)",
+                background: "rgba(15, 17, 26, 0.9)",
                 backdropFilter: "blur(12px)",
                 WebkitBackdropFilter: "blur(12px)",
                 borderRadius: "var(--radius-pill)",
@@ -654,7 +668,7 @@ export const Landing = () => {
         style={{
           borderTop: "1px solid rgba(255, 255, 255, 0.08)",
           padding: "32px 32px 24px 32px",
-          background: "rgba(9, 10, 16, 0.8)",
+          background: "rgba(9, 10, 16, 0.85)",
           backdropFilter: "blur(12px)",
           WebkitBackdropFilter: "blur(12px)",
           marginTop: "auto",

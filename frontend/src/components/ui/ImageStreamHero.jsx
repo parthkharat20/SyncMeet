@@ -93,6 +93,8 @@ export function ImageStreamHero({
   speed = 18,
   axis = 55,
   path,
+  opacity = 1,
+  vignette = true,
   children,
   className = "",
   style = {},
@@ -114,7 +116,7 @@ export function ImageStreamHero({
 
   return (
     <div
-      className={cn("relative overflow-hidden", className)}
+      className={cn("image-stream-hero-container relative overflow-hidden", className)}
       {...props}
       style={{
         position: "relative",
@@ -125,6 +127,7 @@ export function ImageStreamHero({
     >
       <style>{css}</style>
 
+      {/* 3D Perspective Viewport */}
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0"
@@ -134,6 +137,7 @@ export function ImageStreamHero({
           pointerEvents: "none",
           perspective: `${p.perspective}cqw`,
           perspectiveOrigin: `50% ${axis}%`,
+          opacity,
           zIndex: 1,
         }}
       >
@@ -145,7 +149,10 @@ export function ImageStreamHero({
             transformStyle: "preserve-3d",
           }}
         >
-          {[right, left].map((name, dirIdx) =>
+          {[
+            { name: right, dir: 1 },
+            { name: left, dir: -1 },
+          ].map(({ name }) =>
             Array.from({ length: cards }, (_, i) => {
               const img = images[i % Math.max(images.length, 1)];
               return (
@@ -164,7 +171,7 @@ export function ImageStreamHero({
                     animation: `${name} ${speed}s linear infinite`,
                     animationDelay: `${-(i * speed) / cards}s`,
                     backfaceVisibility: "hidden",
-                    border: "1px solid rgba(255, 255, 255, 0.14)",
+                    border: "1px solid rgba(255, 255, 255, 0.16)",
                     boxShadow: "0 16px 36px rgba(0, 0, 0, 0.75), 0 0 20px rgba(88, 101, 242, 0.25)",
                     background: "var(--surface-indigo)",
                     overflow: "hidden",
@@ -193,6 +200,21 @@ export function ImageStreamHero({
           )}
         </div>
       </div>
+
+      {/* High-Contrast Radial Vignette Layer */}
+      {vignette && (
+        <div
+          aria-hidden="true"
+          style={{
+            position: "absolute",
+            inset: 0,
+            background:
+              "radial-gradient(ellipse at 50% 50%, rgba(9, 10, 16, 0.65) 0%, rgba(9, 10, 16, 0.85) 60%, rgba(9, 10, 16, 0.98) 100%)",
+            pointerEvents: "none",
+            zIndex: 2,
+          }}
+        />
+      )}
 
       {/* Foreground Content */}
       {children && (

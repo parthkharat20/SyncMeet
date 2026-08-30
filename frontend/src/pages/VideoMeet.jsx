@@ -12,6 +12,7 @@ import Badge from "../components/ui/Badge";
 import Input from "../components/ui/Input";
 import SyncMeetLogo from "../components/ui/SyncMeetLogo";
 import SpotlightCard from "../components/ui/SpotlightCard";
+import ImageStreamHero from "../components/ui/ImageStreamHero";
 import SyncMeetAtmosphere from "../components/ui/SyncMeetAtmosphere";
 import styles from "../styles/videoComponent.module.css";
 
@@ -74,6 +75,7 @@ const VideoRenderer = React.memo(({ stream, muted = false, isLocal = false, isSc
       if (el.srcObject !== stream) {
         el.srcObject = stream;
       }
+      el.play().catch(() => {});
     } else {
       el.srcObject = null;
     }
@@ -321,62 +323,177 @@ export default function VideoMeetComponent() {
     }
   }, [username]);
 
-  const handleVideo = () => {
-    const nextVideo = !video;
-    if (window.localStream) {
-      window.localStream.getVideoTracks().forEach((track) => {
-        track.enabled = nextVideo;
-      });
+  const handleVideo = async () => {
+    if (screen) {
+      setVideo((prev) => !prev);
+      return;
     }
+
+    const nextVideo = !video;
     setVideo(nextVideo);
+
+    let videoTrackFound = false;
+    [window.localStream, cameraStreamRef.current].forEach((st) => {
+      if (st) {
+        st.getVideoTracks().forEach((track) => {
+          track.enabled = nextVideo;
+          videoTrackFound = true;
+        });
+      }
+    });
+
+    if (!videoTrackFound && nextVideo && navigator.mediaDevices?.getUserMedia) {
+      try {
+        const freshStream = await navigator.mediaDevices.getUserMedia({ video: true });
+        const newTrack = freshStream.getVideoTracks()[0];
+        if (newTrack) {
+          if (!cameraStreamRef.current) cameraStreamRef.current = new MediaStream();
+          cameraStreamRef.current.addTrack(newTrack);
+          if (!window.localStream) window.localStream = new MediaStream();
+          window.localStream.addTrack(newTrack);
+          setLocalStreamState(window.localStream);
+          setVideoAvailable(true);
+
+          Object.keys(connectionsRef.current).forEach((peerId) => {
+            const pc = connectionsRef.current[peerId];
+            if (pc) {
+              const videoSender = pc.getSenders().find((s) => s.track ? s.track.kind === "video" : true);
+              if (videoSender) {
+                videoSender.replaceTrack(newTrack).catch((e) => console.error("replaceTrack video error:", e));
+              }
+            }
+          });
+        }
+      } catch (e) {
+        console.warn("[ACQUIRE VIDEO ON TOGGLE ERROR]", e.message);
+        handleDeviceError(e);
+        setVideo(false);
+        return;
+      }
+    }
+
     if (socketRef.current) {
       socketRef.current.emit("update-media-state", { video: nextVideo });
     }
   };
 
-  const handleAudio = () => {
+  const handleAudio = async () => {
     const nextAudio = !audio;
-    if (window.localStream) {
-      window.localStream.getAudioTracks().forEach((track) => {
-        track.enabled = nextAudio;
-      });
-    }
     setAudio(nextAudio);
+
+    let audioTrackFound = false;
+    [window.localStream, cameraStreamRef.current].forEach((st) => {
+      if (st) {
+        st.getAudioTracks().forEach((track) => {
+          track.enabled = nextAudio;
+          audioTrackFound = true;
+        });
+      }
+    });
+
+    if (!audioTrackFound && nextAudio && navigator.mediaDevices?.getUserMedia) {
+      try {
+        const freshStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const newTrack = freshStream.getAudioTracks()[0];
+        if (newTrack) {
+          if (!cameraStreamRef.current) cameraStreamRef.current = new MediaStream();
+          cameraStreamRef.current.addTrack(newTrack);
+          if (!window.localStream) window.localStream = new MediaStream();
+          window.localStream.addTrack(newTrack);
+          setLocalStreamState(window.localStream);
+          setAudioAvailable(true);
+
+          Object.keys(connectionsRef.current).forEach((peerId) => {
+            const pc = connectionsRef.current[peerId];
+            if (pc) {
+              const audioSender = pc.getSenders().find((s) => s.track ? s.track.kind === "audio" : true);
+              if (audioSender) {
+                audioSender.replaceTrack(newTrack).catch((e) => console.error("replaceTrack audio error:", e));
+              }
+            }
+          });
+        }
+      } catch (e) {
+        console.warn("[ACQUIRE AUDIO ON UNMUTE ERROR]", e.message);
+        handleDeviceError(e);
+        setAudio(false);
+        return;
+      }
+    }
+
     if (socketRef.current) {
       socketRef.current.emit("update-media-state", { audio: nextAudio });
     }
   };
 
-  // Screen Share Lifecycle: Start and Stop cleanly across all peers
+  // Screen Share Lifecycle: Start and Stop cleanly across all peers while preserving mic audio
   const startScreenShare = async () => {
-    if (!navigator.mediaDevices?.getDisplayMedia) return;
+    if (!navigator.mediaDevices?.getDisplayMedia) {
+      setDeviceError("Screen sharing is not supported in this browser.");
+      return;
+    }
+
+    let screenStream = null;
     try {
-      const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
-      screenStreamRef.current = screenStream;
-      const screenVideoTrack = screenStream.getVideoTracks()[0];
-      if (!screenVideoTrack) return;
+      screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+    } catch (err1) {
+      try {
+        screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+      } catch (err2) {
+        console.warn("[SCREEN SHARE CANCELLED / ERROR]", err2.message);
+        return;
+      }
+    }
 
-      screenVideoTrack.onended = () => {
-        stopScreenShare();
-      };
+    if (!screenStream) return;
 
-      window.localStream = screenStream;
-      setLocalStreamState(screenStream);
-      setScreen(true);
+    screenStreamRef.current = screenStream;
+    const screenVideoTrack = screenStream.getVideoTracks()[0];
+    if (!screenVideoTrack) return;
 
-      Object.keys(connectionsRef.current).forEach((peerId) => {
-        const pc = connectionsRef.current[peerId];
-        if (pc) {
-          const sender = pc.getSenders().find((s) => s.track && s.track.kind === "video");
-          if (sender) {
-            sender.replaceTrack(screenVideoTrack).catch((e) => console.error("replaceTrack screen error:", e));
-          } else {
-            pc.addTrack(screenVideoTrack, screenStream);
+    screenVideoTrack.onended = () => {
+      stopScreenShare();
+    };
+
+    // Combine screen video track with existing mic track so participant voice audio is preserved
+    const combinedStream = new MediaStream();
+    combinedStream.addTrack(screenVideoTrack);
+
+    const micTrack = cameraStreamRef.current?.getAudioTracks()?.find((t) => t.readyState === "live");
+    if (micTrack) {
+      combinedStream.addTrack(micTrack);
+    }
+
+    const screenAudioTrack = screenStream.getAudioTracks()[0];
+    if (screenAudioTrack) {
+      combinedStream.addTrack(screenAudioTrack);
+    }
+
+    window.localStream = combinedStream;
+    setLocalStreamState(combinedStream);
+    setScreen(true);
+
+    Object.keys(connectionsRef.current).forEach((peerId) => {
+      const pc = connectionsRef.current[peerId];
+      if (pc) {
+        let videoSender = pc.getSenders().find((s) => s.track && s.track.kind === "video");
+        if (!videoSender) {
+          videoSender = pc.getSenders().find((s) => !s.track || s.track.kind === "video");
+        }
+        if (videoSender) {
+          videoSender.replaceTrack(screenVideoTrack).catch((e) => console.error("replaceTrack screen error:", e));
+        } else {
+          try {
+            pc.addTrack(screenVideoTrack, combinedStream);
+          } catch (e) {
+            console.warn("addTrack screen fallback:", e);
           }
         }
-      });
-    } catch (e) {
-      console.warn("[SCREEN SHARE START ERROR/CANCEL]", e.message);
+      }
+    });
+
+    if (socketRef.current) {
+      socketRef.current.emit("update-media-state", { screen: true, video: true });
     }
   };
 
@@ -393,8 +510,7 @@ export default function VideoMeetComponent() {
     let cameraStream = cameraStreamRef.current;
     let cameraTrack = cameraStream?.getVideoTracks()?.find((t) => t.readyState === "live");
 
-    // If camera track was stopped or missing, acquire fresh camera stream
-    if (!cameraTrack && videoAvailable) {
+    if (!cameraTrack && videoAvailable && video) {
       try {
         const freshCam = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
         const freshTrack = freshCam.getVideoTracks()[0];
@@ -411,22 +527,26 @@ export default function VideoMeetComponent() {
       }
     }
 
-    if (cameraStream) {
-      window.localStream = cameraStream;
-      setLocalStreamState(cameraStream);
+    const activeStream = cameraStream || new MediaStream();
+    window.localStream = activeStream;
+    setLocalStreamState(activeStream);
 
-      if (cameraTrack) {
-        cameraTrack.enabled = video;
-        Object.keys(connectionsRef.current).forEach((peerId) => {
-          const pc = connectionsRef.current[peerId];
-          if (pc) {
-            const sender = pc.getSenders().find((s) => s.track && s.track.kind === "video");
-            if (sender) {
-              sender.replaceTrack(cameraTrack).catch((e) => console.error("replaceTrack restore camera error:", e));
-            }
-          }
-        });
+    if (cameraTrack) {
+      cameraTrack.enabled = video;
+    }
+
+    Object.keys(connectionsRef.current).forEach((peerId) => {
+      const pc = connectionsRef.current[peerId];
+      if (pc) {
+        const videoSender = pc.getSenders().find((s) => s.track ? s.track.kind === "video" : true);
+        if (videoSender) {
+          videoSender.replaceTrack(video ? (cameraTrack || null) : null).catch((e) => console.error("replaceTrack restore camera error:", e));
+        }
       }
+    });
+
+    if (socketRef.current) {
+      socketRef.current.emit("update-media-state", { screen: false, video });
     }
   };
 
@@ -551,17 +671,23 @@ export default function VideoMeetComponent() {
       });
     };
 
-    if (window.localStream && window.localStream.getTracks().length > 0) {
-      window.localStream.getTracks().forEach((track) => {
-        pc.addTrack(track, window.localStream);
+    const hasAudio = window.localStream?.getAudioTracks()?.length > 0;
+    const hasVideo = window.localStream?.getVideoTracks()?.length > 0;
+
+    if (hasAudio) {
+      window.localStream.getAudioTracks().forEach((track) => {
+        try { pc.addTrack(track, window.localStream); } catch (e) {}
       });
     } else {
-      try {
-        pc.addTransceiver("video", { direction: "recvonly" });
-        pc.addTransceiver("audio", { direction: "recvonly" });
-      } catch (e) {
-        console.warn("[TRANSCEIVER LOG]", e.message);
-      }
+      try { pc.addTransceiver("audio", { direction: "sendrecv" }); } catch (e) {}
+    }
+
+    if (hasVideo) {
+      window.localStream.getVideoTracks().forEach((track) => {
+        try { pc.addTrack(track, window.localStream); } catch (e) {}
+      });
+    } else {
+      try { pc.addTransceiver("video", { direction: "sendrecv" }); } catch (e) {}
     }
 
     return pc;
@@ -592,6 +718,7 @@ export default function VideoMeetComponent() {
 
       const roomPath = window.location.href;
       socket.emit("join-call", roomPath, username);
+      socket.emit("update-media-state", { audio, video, screen: false });
 
       socket.on("signal", gotMessageFromServer);
       socket.on("chat-messages", addMessage);
@@ -728,8 +855,22 @@ export default function VideoMeetComponent() {
       {/* ─── Pre-Call Lobby Screen ─── */}
       {askForUsername ? (
         <>
-          {/* ─── Global Full-Page Immersive Background Atmosphere (Lobby) ─── */}
-          <SyncMeetAtmosphere variant="lobby" />
+          {/* ─── Global Full-Screen 3D Perspective Stream Corridor (Lobby) ─── */}
+          <ImageStreamHero
+            speed={22}
+            axis={50}
+            opacity={0.6}
+            vignette={true}
+            style={{
+              position: "fixed",
+              top: 0,
+              left: 0,
+              width: "100vw",
+              height: "100vh",
+              pointerEvents: "none",
+              zIndex: 0,
+            }}
+          />
 
           <Navbar />
           <main className={styles.lobbyWrapper} style={{ position: "relative", zIndex: 10 }}>
@@ -958,7 +1099,7 @@ export default function VideoMeetComponent() {
               <div className={styles.videoGrid} style={{ gridTemplateColumns, gridTemplateRows }}>
                 {/* Local Participant Tile */}
                 <div className={`${styles.videoTile} ${audio ? styles.videoTileSpeaking : ""}`}>
-                  {video ? (
+                  {video || screen ? (
                     <VideoRenderer stream={localStreamState} muted={true} isLocal={true} isScreen={screen} />
                   ) : (
                     <div className={styles.videoAvatarFallback}>
@@ -973,7 +1114,7 @@ export default function VideoMeetComponent() {
                     ) : (
                       <MicOffIcon style={{ color: "var(--color-error)", fontSize: "14px" }} />
                     )}
-                    <span>{username} (You)</span>
+                    <span>{username} (You){screen ? " • Screen" : ""}</span>
                   </div>
                 </div>
 
@@ -982,12 +1123,13 @@ export default function VideoMeetComponent() {
                   const meta = peerMetadata[v.socketId] || {};
                   const peerName = meta.name || `Peer ${v.socketId.slice(0, 5)}`;
                   const isAudioOn = meta.audio !== false;
-                  const isVideoOn = meta.video !== false;
+                  const isScreenOn = meta.screen === true;
+                  const isVideoOn = meta.video !== false || isScreenOn;
 
                   return (
                     <div key={v.socketId} className={styles.videoTile}>
                       {isVideoOn ? (
-                        <VideoRenderer stream={v.stream} isLocal={false} />
+                        <VideoRenderer stream={v.stream} isLocal={false} isScreen={isScreenOn} />
                       ) : (
                         <div className={styles.videoAvatarFallback}>
                           <div className={styles.avatarCircle}>{getInitials(peerName)}</div>
@@ -1002,7 +1144,7 @@ export default function VideoMeetComponent() {
                         ) : (
                           <MicOffIcon style={{ color: "var(--color-error)", fontSize: "14px" }} />
                         )}
-                        <span>{peerName}</span>
+                        <span>{peerName}{isScreenOn ? " • Screen" : ""}</span>
                       </div>
                     </div>
                   );

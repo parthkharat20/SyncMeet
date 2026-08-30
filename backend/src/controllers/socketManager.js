@@ -184,6 +184,7 @@ export const connectToSocket = (server) => {
       if (roomCode && participantData[roomCode] && participantData[roomCode][socket.id]) {
         if (typeof mediaState.audio === "boolean") participantData[roomCode][socket.id].audio = mediaState.audio;
         if (typeof mediaState.video === "boolean") participantData[roomCode][socket.id].video = mediaState.video;
+        if (typeof mediaState.screen === "boolean") participantData[roomCode][socket.id].screen = mediaState.screen;
 
         connections[roomCode].forEach((sId) => {
           if (sId !== socket.id) {
@@ -191,6 +192,7 @@ export const connectToSocket = (server) => {
               socketId: socket.id,
               audio: participantData[roomCode][socket.id].audio,
               video: participantData[roomCode][socket.id].video,
+              screen: participantData[roomCode][socket.id].screen,
               name: participantData[roomCode][socket.id].name,
             });
           }
